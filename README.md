@@ -1,88 +1,110 @@
 # Library Management System
 
-Web application for school and educational libraries. Phase 1 is a runnable Next.js foundation only. Library features (catalogue, members, loans, fines, and so on) are not implemented yet.
+Production-oriented, full-stack web application for school and educational libraries.
 
-## Technology stack
+## Technology Stack
 
-- Next.js (App Router)
-- React
-- TypeScript
-- Tailwind CSS
-- ESLint
+- **Framework**: Next.js 16 (App Router)
+- **UI Library**: React 19, Lucide Icons, Class Variance Authority
+- **Language**: TypeScript (Strict Mode)
+- **Styling**: Tailwind CSS v4
+- **Database & ORM**: PostgreSQL / Supabase, Drizzle ORM
+- **Authentication**: Supabase Auth (@supabase/ssr)
+- **Validation**: Zod
+- **Code Quality**: ESLint (Next.js Core Web Vitals & TypeScript)
 
-Later phases are expected to add PostgreSQL, Supabase, Drizzle ORM, Zod, Vitest, and Playwright. Those packages are not installed yet.
+---
 
-## Local development requirements
+## Local Development Requirements
 
 - Node.js 24 (see `.nvmrc`)
 - npm (comes with Node.js)
 
 If you use nvm:
-
 ```bash
 nvm use
 ```
 
-## Installation
+---
 
-```bash
-npm install
-```
+## Installation & Setup
 
-## Running the development server
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-```
+2. **Environment configuration:**
+   Copy `.env.example` to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Configure your Supabase and PostgreSQL connection credentials in `.env.local`.
 
-Open [http://localhost:3000](http://localhost:3000). You should see a simple Phase 1 home page.
+3. **Database migrations (Drizzle ORM):**
+   ```bash
+   # Generate migrations from schemas
+   npm run db:generate
 
-Other useful commands:
+   # Push schema directly to database (development)
+   npm run db:push
 
-```bash
-npm run lint
-npm run build
-```
+   # Open Drizzle Studio visual GUI
+   npm run db:studio
+   ```
 
-## Environment variables
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000).
 
-Copy `.env.example` to `.env.local` when a later phase needs them. Do not commit `.env` or `.env.local`.
+---
 
-| Variable | When it will be needed |
-| --- | --- |
-| `DATABASE_URL` | Database / ORM setup |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase client and auth |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client and auth |
+## Available Scripts
 
-Phase 1 does not read these variables.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Build production bundle |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint quality checks |
+| `npm run db:generate` | Generate SQL migrations from Drizzle schemas |
+| `npm run db:migrate` | Apply SQL migrations to the database |
+| `npm run db:push` | Push schema changes directly to PostgreSQL |
+| `npm run db:studio` | Launch Drizzle Studio database GUI |
 
-## Project structure
+---
+
+## Project Structure
 
 ```text
-src/app/          Routes and layouts (App Router)
-public/           Static assets (when added)
+src/
+├── app/                  # Next.js App Router (pages, layouts, globals.css)
+├── components/           # Reusable UI components
+│   └── ui/               # Base design system primitives (button, badge, card, input)
+├── config/               # App-wide configurations
+│   ├── env.ts            # Zod-validated environment config
+│   ├── roles.ts          # Roles, permissions matrix, and role hierarchy
+│   └── site.ts           # Site metadata, library policies, and navigation
+├── db/                   # Database layer
+│   ├── index.ts          # Drizzle client instance (PostgresJS)
+│   └── schema/           # Entity schemas (users, books, loans, fines, etc.)
+├── lib/                  # Shared utilities & helpers
+│   ├── utils.ts          # cn() class merge and formatters
+│   └── supabase/         # Browser, server, and middleware Supabase clients
+└── types/                # Shared TypeScript models and inferred Drizzle types
 ```
 
-Intended folders for later phases (create when the first real file is added):
+---
 
-```text
-src/components/   UI components
-src/lib/          Shared application helpers
-src/server/       Server-only logic
-src/db/           Database schema and queries
-src/types/        Shared TypeScript types
-src/config/       App configuration
-tests/            Automated tests
-```
+## Development Roadmap
 
-## Development philosophy
-
-- Small phases, approved before implementation
-- Minimal dependencies until a phase needs them
-- No secrets in git
-- No fake library features or placeholder business logic
-- Keep the code readable for a beginner working with AI assistance
-
-## Future modules
-
-Authentication, role-based access, dashboard, catalogue (books, authors, categories, publishers, copies), members, issuing and returns, renewals, reservations, overdue tracking, fines, notifications, reports, analytics, audit logs, settings, security controls, and automated tests.
+- [x] **Phase 1**: Project Foundation (Next.js 16, React 19, TypeScript, Tailwind CSS v4)
+- [x] **Phase 2**: Core Architecture & Database Layer (Drizzle ORM, PostgreSQL Schemas, Supabase Auth setup, RBAC permissions, UI Primitives)
+- [ ] **Phase 3**: Authentication & User Management (Supabase Auth login/register, session middleware, profile management)
+- [ ] **Phase 4**: Book Catalogue & Inventory (Books, Authors, Categories, ISBN lookups, Physical copy tracking)
+- [ ] **Phase 5**: Circulation System (Issue, Return, Renew, Reservations, Loan limits)
+- [ ] **Phase 6**: Fines & Overdue Management (Automatic calculation, payments, waiving)
+- [ ] **Phase 7**: Dashboards & Analytics (Role-based metrics, reports, audit logs)
+- [ ] **Phase 8**: Testing & Production Hardening (Vitest unit tests, Playwright E2E)
