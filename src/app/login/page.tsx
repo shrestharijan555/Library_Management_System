@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import {
   BookOpen,
   Eye,
@@ -168,9 +169,12 @@ export default function LoginPage() {
 
               <div className="text-center text-xs text-zinc-500">
                 Need an account?{" "}
-                <span className="font-medium text-zinc-900 underline underline-offset-4">
-                  Self-registration available in Phase 3.3
-                </span>
+                <Link
+                  href="/register"
+                  className="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700"
+                >
+                  Create a student account
+                </Link>
               </div>
             </CardFooter>
           </form>
