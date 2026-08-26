@@ -10,6 +10,7 @@ import { loginSchema } from "@/lib/auth/validation";
 export interface AuthActionResult {
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  emailUnverified?: boolean;
 }
 
 /**
@@ -46,6 +47,19 @@ export async function loginAction(
     });
 
   if (authError || !authData.user) {
+    // Detect email-not-confirmed error from Supabase
+    const errorMsg = authError?.message?.toLowerCase() ?? "";
+    if (
+      errorMsg.includes("email not confirmed") ||
+      errorMsg.includes("email_not_confirmed")
+    ) {
+      return {
+        error:
+          "Your email address has not been verified. Please check your inbox for a verification link, or request a new one.",
+        emailUnverified: true,
+      };
+    }
+
     return {
       error: "Invalid email or password. Please check your credentials.",
     };

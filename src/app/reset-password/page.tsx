@@ -4,17 +4,18 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import {
   BookOpen,
-  User,
-  Mail,
   Lock,
-  CreditCard,
   Eye,
   EyeOff,
   AlertCircle,
   Loader2,
   CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
-import { registerAction, type RegisterActionResult } from "@/app/actions/register";
+import {
+  resetPasswordAction,
+  type RecoveryActionResult,
+} from "@/app/actions/recovery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,11 +28,11 @@ import {
 } from "@/components/ui/card";
 import { siteConfig } from "@/config/site";
 
-export default function RegisterPage() {
+export default function ResetPasswordPage() {
   const [state, formAction, isPending] = useActionState<
-    RegisterActionResult | null,
+    RecoveryActionResult | null,
     FormData
-  >(registerAction, null);
+  >(resetPasswordAction, null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -48,22 +49,26 @@ export default function RegisterPage() {
             {siteConfig.name}
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Create a new Student Library Account
+            Set a new password for your account
           </p>
         </div>
 
-        {/* Registration Card Form */}
+        {/* Reset Password Card */}
         <Card className="border-zinc-200/80 shadow-sm">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl">Register Account</CardTitle>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <ShieldCheck className="size-5 text-zinc-700" />
+              Reset Password
+            </CardTitle>
             <CardDescription>
-              Enter your details below to create your student account
+              Enter your new password below. Make sure it meets the security
+              requirements.
             </CardDescription>
           </CardHeader>
 
           <form action={formAction}>
             <CardContent className="space-y-4">
-              {/* Success Banner (e.g. Email confirmation required) */}
+              {/* Success Banner — shown briefly before redirect */}
               {state?.successMessage && (
                 <div
                   role="status"
@@ -71,15 +76,11 @@ export default function RegisterPage() {
                 >
                   <div className="flex items-center gap-2 font-semibold">
                     <CheckCircle2 className="size-5 shrink-0 text-emerald-600" />
-                    <span>Account Created</span>
+                    <span>Password Updated</span>
                   </div>
-                  <p className="text-xs leading-relaxed">{state.successMessage}</p>
-                  <Link
-                    href="/verify-email"
-                    className="mt-1 inline-flex items-center justify-center rounded-md bg-emerald-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-900 transition-colors"
-                  >
-                    Go to Email Verification
-                  </Link>
+                  <p className="text-xs leading-relaxed">
+                    {state.successMessage}
+                  </p>
                 </div>
               )}
 
@@ -94,105 +95,13 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              {/* Full Name Input */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="fullName"
-                  className="text-sm font-medium leading-none text-zinc-900"
-                >
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 size-4 text-zinc-400" />
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    type="text"
-                    placeholder="Jane Doe"
-                    autoComplete="name"
-                    required
-                    disabled={isPending || !!state?.successMessage}
-                    className="pl-9"
-                    aria-describedby={
-                      state?.fieldErrors?.fullName ? "fullName-error" : undefined
-                    }
-                  />
-                </div>
-                {state?.fieldErrors?.fullName && (
-                  <p id="fullName-error" className="text-xs font-medium text-red-600">
-                    {state.fieldErrors.fullName[0]}
-                  </p>
-                )}
-              </div>
-
-              {/* Email Input */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium leading-none text-zinc-900"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 size-4 text-zinc-400" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="jane.doe@school.edu"
-                    autoComplete="email"
-                    required
-                    disabled={isPending || !!state?.successMessage}
-                    className="pl-9"
-                    aria-describedby={
-                      state?.fieldErrors?.email ? "email-error" : undefined
-                    }
-                  />
-                </div>
-                {state?.fieldErrors?.email && (
-                  <p id="email-error" className="text-xs font-medium text-red-600">
-                    {state.fieldErrors.email[0]}
-                  </p>
-                )}
-              </div>
-
-              {/* Member Code / Student ID Input */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="memberCode"
-                  className="text-sm font-medium leading-none text-zinc-900"
-                >
-                  Student ID / Member Code{" "}
-                  <span className="text-xs text-zinc-400 font-normal">(Optional)</span>
-                </label>
-                <div className="relative">
-                  <CreditCard className="absolute left-3 top-2.5 size-4 text-zinc-400" />
-                  <Input
-                    id="memberCode"
-                    name="memberCode"
-                    type="text"
-                    placeholder="STU-123456 (Leave blank to auto-generate)"
-                    disabled={isPending || !!state?.successMessage}
-                    className="pl-9"
-                    aria-describedby={
-                      state?.fieldErrors?.memberCode ? "memberCode-error" : undefined
-                    }
-                  />
-                </div>
-                {state?.fieldErrors?.memberCode && (
-                  <p id="memberCode-error" className="text-xs font-medium text-red-600">
-                    {state.fieldErrors.memberCode[0]}
-                  </p>
-                )}
-              </div>
-
-              {/* Password Input */}
+              {/* New Password Input */}
               <div className="space-y-2">
                 <label
                   htmlFor="password"
                   className="text-sm font-medium leading-none text-zinc-900"
                 >
-                  Password
+                  New Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-2.5 size-4 text-zinc-400" />
@@ -203,16 +112,18 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     autoComplete="new-password"
                     required
-                    disabled={isPending || !!state?.successMessage}
+                    disabled={isPending}
                     className="pl-9 pr-10"
                     aria-describedby={
-                      state?.fieldErrors?.password ? "password-error" : undefined
+                      state?.fieldErrors?.password
+                        ? "password-error"
+                        : "password-hint"
                     }
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    disabled={isPending || !!state?.successMessage}
+                    disabled={isPending}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-600 focus:outline-none"
                   >
@@ -228,7 +139,7 @@ export default function RegisterPage() {
                     {state.fieldErrors.password[0]}
                   </p>
                 ) : (
-                  <p className="text-[11px] text-zinc-500">
+                  <p id="password-hint" className="text-[11px] text-zinc-500">
                     Must be 8+ characters with uppercase, lowercase, and number
                   </p>
                 )}
@@ -240,7 +151,7 @@ export default function RegisterPage() {
                   htmlFor="confirmPassword"
                   className="text-sm font-medium leading-none text-zinc-900"
                 >
-                  Confirm Password
+                  Confirm New Password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-2.5 size-4 text-zinc-400" />
@@ -251,7 +162,7 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     autoComplete="new-password"
                     required
-                    disabled={isPending || !!state?.successMessage}
+                    disabled={isPending}
                     className="pl-9 pr-10"
                     aria-describedby={
                       state?.fieldErrors?.confirmPassword
@@ -262,7 +173,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    disabled={isPending || !!state?.successMessage}
+                    disabled={isPending}
                     aria-label={
                       showConfirmPassword ? "Hide password" : "Show password"
                     }
@@ -289,37 +200,35 @@ export default function RegisterPage() {
             <CardFooter className="flex flex-col gap-4 pt-2">
               <Button
                 type="submit"
-                disabled={isPending || !!state?.successMessage}
+                disabled={isPending}
                 className="w-full font-medium"
               >
                 {isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" />
-                    <span>Creating Account...</span>
+                    <span>Updating Password...</span>
                   </>
                 ) : (
-                  "Create Student Account"
+                  "Update Password"
                 )}
               </Button>
 
               <div className="text-center text-xs text-zinc-500">
-                Already have an account?{" "}
                 <Link
                   href="/login"
                   className="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-700"
                 >
-                  Sign in here
+                  Return to Sign In
                 </Link>
               </div>
             </CardFooter>
           </form>
         </Card>
 
-        {/* Security badge note */}
-        <div className="flex items-center justify-center gap-1.5 text-center text-xs text-zinc-400">
-          <CheckCircle2 className="size-3.5 text-emerald-600" />
-          <span>Server-assigned Student role & Active account status</span>
-        </div>
+        {/* Footer info */}
+        <p className="text-center text-xs text-zinc-400">
+          EduLibrary Management System &bull; Secure Authentication
+        </p>
       </div>
     </main>
   );
