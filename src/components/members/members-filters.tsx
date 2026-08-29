@@ -30,7 +30,6 @@ export function MembersFilters() {
       params.delete(key);
     }
     params.set("page", "1");
-
     startTransition(() => {
       router.push(`/members?${params.toString()}`);
     });
@@ -57,14 +56,14 @@ export function MembersFilters() {
           className="h-8 rounded-md border border-zinc-300 bg-white px-2.5 text-xs text-zinc-700 shadow-xs focus:border-zinc-950 focus:outline-none cursor-pointer"
         >
           <option value="all">All Roles</option>
-          <option value="student">Student</option>
+          <option value="student">Students</option>
           <option value="staff">Staff / Faculty</option>
-          <option value="librarian">Librarian</option>
-          <option value="admin">Administrator</option>
+          <option value="librarian">Librarians</option>
+          <option value="admin">Administrators</option>
         </select>
       </div>
 
-      {/* Account Status Filter */}
+      {/* Status Filter */}
       <div className="flex items-center gap-1.5">
         <label htmlFor="statusFilter" className="text-xs font-semibold text-zinc-500 whitespace-nowrap">
           Status:
@@ -83,7 +82,7 @@ export function MembersFilters() {
         </select>
       </div>
 
-      {/* Borrowing Standing Filter */}
+      {/* Standing Filter */}
       <div className="flex items-center gap-1.5">
         <label htmlFor="standingFilter" className="text-xs font-semibold text-zinc-500 whitespace-nowrap">
           Standing:
@@ -102,7 +101,7 @@ export function MembersFilters() {
         </select>
       </div>
 
-      {/* Sort Option */}
+      {/* Sort Filter */}
       <div className="flex items-center gap-1.5 ml-auto">
         <label htmlFor="sortFilter" className="text-xs font-semibold text-zinc-500 whitespace-nowrap">
           Sort by:
@@ -116,9 +115,9 @@ export function MembersFilters() {
         >
           <option value="newest">Newest Joined</option>
           <option value="oldest">Oldest Joined</option>
-          <option value="name_asc">Name (A &rarr; Z)</option>
-          <option value="name_desc">Name (Z &rarr; A)</option>
-          <option value="code_asc">Member Code (A &rarr; Z)</option>
+          <option value="name_asc">Name (A → Z)</option>
+          <option value="name_desc">Name (Z → A)</option>
+          <option value="code_asc">Member Code (A → Z)</option>
           <option value="loans_desc">Most Active Loans</option>
         </select>
       </div>
