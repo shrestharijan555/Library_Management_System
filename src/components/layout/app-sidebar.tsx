@@ -95,7 +95,9 @@ export function AppSidebar({ user, onNavigate }: AppSidebarProps) {
             const Icon = NAV_ICON_MAP[item.href] || LayoutDashboard;
             const isActive = pathname === item.href;
             const isImplemented =
-              item.href === "/dashboard" || item.href.startsWith("/catalogue");
+              item.href === "/dashboard" ||
+              item.href.startsWith("/catalogue") ||
+              item.href.startsWith("/members");
 
             return (
               <Link

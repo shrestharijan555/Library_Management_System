@@ -20,6 +20,7 @@ export type { LibraryPolicy, NavItem } from "@/config/site";
 // Database Model Types
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
+export type UserStatus = User["status"];
 
 export type Category = InferSelectModel<typeof categories>;
 export type NewCategory = InferInsertModel<typeof categories>;
