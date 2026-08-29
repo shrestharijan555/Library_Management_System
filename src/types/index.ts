@@ -38,6 +38,7 @@ export type NewBookAuthor = InferInsertModel<typeof bookAuthors>;
 
 export type BookCopy = InferSelectModel<typeof bookCopies>;
 export type NewBookCopy = InferInsertModel<typeof bookCopies>;
+export type CopyStatus = BookCopy["status"];
 
 export type Loan = InferSelectModel<typeof loans>;
 export type NewLoan = InferInsertModel<typeof loans>;

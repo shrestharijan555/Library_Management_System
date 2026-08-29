@@ -34,12 +34,13 @@ import {
   FileText,
   Barcode,
   MapPin,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Wrench,
 } from "lucide-react";
 import { DeleteBookDialog } from "@/components/catalogue/delete-book-dialog";
+import { AddCopyDialog } from "@/components/inventory/add-copy-dialog";
+import { EditCopyDialog } from "@/components/inventory/edit-copy-dialog";
+import { DeleteCopyDialog } from "@/components/inventory/delete-copy-dialog";
+import { CopyStatusDropdown } from "@/components/inventory/copy-status-dropdown";
+import { BarcodeQuickLookup } from "@/components/inventory/barcode-quick-lookup";
 
 interface BookDetailsPageProps {
   params: Promise<{
@@ -89,6 +90,7 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
     .where(eq(bookCopies.bookId, bookId))
     .orderBy(asc(bookCopies.barcode));
 
+  // RBAC Permission checks
   const canEdit = hasPermission(
     appUser.role as UserRole,
     PERMISSIONS.UPDATE_BOOK
@@ -97,49 +99,23 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
     appUser.role as UserRole,
     PERMISSIONS.DELETE_BOOK
   );
+  const canManageInventory = hasPermission(
+    appUser.role as UserRole,
+    PERMISSIONS.MANAGE_INVENTORY
+  );
+  const canScanBarcode = hasPermission(
+    appUser.role as UserRole,
+    PERMISSIONS.SCAN_BARCODE
+  );
 
   const isAvailable = book.availableCopies > 0;
 
-  const getCopyStatusBadge = (status: string) => {
-    switch (status) {
-      case "available":
-        return (
-          <Badge variant="success" className="gap-1 text-[10px]">
-            <CheckCircle2 className="size-3" />
-            <span>Available</span>
-          </Badge>
-        );
-      case "borrowed":
-        return (
-          <Badge variant="destructive" className="gap-1 text-[10px]">
-            <Clock className="size-3" />
-            <span>Checked Out</span>
-          </Badge>
-        );
-      case "reserved":
-        return (
-          <Badge variant="info" className="gap-1 text-[10px]">
-            <Bookmark className="size-3" />
-            <span>Reserved</span>
-          </Badge>
-        );
-      case "maintenance":
-        return (
-          <Badge variant="warning" className="gap-1 text-[10px]">
-            <Wrench className="size-3" />
-            <span>Maintenance</span>
-          </Badge>
-        );
-      case "lost":
-      default:
-        return (
-          <Badge variant="destructive" className="gap-1 text-[10px]">
-            <AlertCircle className="size-3" />
-            <span>Lost / Damaged</span>
-          </Badge>
-        );
-    }
-  };
+  // Inventory count breakdowns
+  const availableCount = copies.filter((c) => c.status === "available").length;
+  const borrowedCount = copies.filter((c) => c.status === "borrowed").length;
+  const reservedCount = copies.filter((c) => c.status === "reserved").length;
+  const maintenanceCount = copies.filter((c) => c.status === "maintenance").length;
+  const lostCount = copies.filter((c) => c.status === "lost").length;
 
   return (
     <div className="space-y-6">
@@ -170,7 +146,9 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {(canScanBarcode || canManageInventory) && <BarcodeQuickLookup />}
+
           {canEdit && (
             <Link href={`/catalogue/${book.id}/edit`}>
               <Button variant="outline" size="sm" className="gap-1.5 shadow-xs">
@@ -357,30 +335,98 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
         </div>
       </div>
 
-      {/* Physical Copies Inventory Section */}
+      {/* Physical Copies Inventory Section (Phase 7) */}
       <Card className="border-zinc-200 shadow-sm">
         <CardHeader className="border-b border-zinc-100 pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-base flex items-center gap-2">
                 <Barcode className="size-4 text-zinc-700" />
-                Physical Copies Inventory ({copies.length})
+                Physical Copies & Inventory ({copies.length})
               </CardTitle>
               <CardDescription>
-                Tracked physical items, barcodes, and shelf placements
+                Tracked physical holdings, barcodes, shelf placements, and condition audits
               </CardDescription>
             </div>
 
-            <Badge variant="outline" className="text-xs">
-              {book.availableCopies} Available
-            </Badge>
+            <div className="flex items-center gap-2">
+              {canManageInventory && (
+                <AddCopyDialog
+                  bookId={book.id}
+                  bookTitle={book.title}
+                  isbn={book.isbn}
+                  defaultShelfLocation={book.callNumber ? `Shelf ${book.callNumber}` : "General Stacks"}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Inventory Breakdown Strip */}
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6 pt-2">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-2.5 text-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 block">
+                Total Copies
+              </span>
+              <span className="text-base font-bold text-zinc-900">{copies.length}</span>
+            </div>
+
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-2.5 text-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 block">
+                Available
+              </span>
+              <span className="text-base font-bold text-emerald-800">{availableCount}</span>
+            </div>
+
+            <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-2.5 text-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 block">
+                Checked Out
+              </span>
+              <span className="text-base font-bold text-amber-800">{borrowedCount}</span>
+            </div>
+
+            <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-2.5 text-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-sky-700 block">
+                Reserved
+              </span>
+              <span className="text-base font-bold text-sky-800">{reservedCount}</span>
+            </div>
+
+            <div className="rounded-lg border border-orange-200 bg-orange-50/60 p-2.5 text-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-orange-700 block">
+                Maintenance
+              </span>
+              <span className="text-base font-bold text-orange-800">{maintenanceCount}</span>
+            </div>
+
+            <div className="rounded-lg border border-red-200 bg-red-50/60 p-2.5 text-center">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-red-700 block">
+                Lost / Missing
+              </span>
+              <span className="text-base font-bold text-red-800">{lostCount}</span>
+            </div>
           </div>
         </CardHeader>
 
         <CardContent className="p-0">
           {copies.length === 0 ? (
-            <div className="p-8 text-center text-xs text-zinc-500">
-              No physical copy records are registered for this title yet.
+            <div className="p-8 text-center space-y-3">
+              <div className="flex size-12 mx-auto items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                <Barcode className="size-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-zinc-900">No Physical Copies Registered</h4>
+                <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                  There are currently no physical copy items tracked in the inventory for this title.
+                </p>
+              </div>
+              {canManageInventory && (
+                <AddCopyDialog
+                  bookId={book.id}
+                  bookTitle={book.title}
+                  isbn={book.isbn}
+                  defaultShelfLocation="General Stacks"
+                />
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -390,19 +436,25 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
                     <th className="py-3 pl-4 pr-3 sm:pl-6">Copy #</th>
                     <th className="px-3 py-3">Barcode</th>
                     <th className="px-3 py-3">Shelf Location</th>
-                    <th className="px-3 py-3">Current Status</th>
+                    <th className="px-3 py-3">Status</th>
                     <th className="px-3 py-3">Condition Notes</th>
-                    <th className="py-3 pl-3 pr-4 text-right sm:pr-6">Acquired</th>
+                    <th className="px-3 py-3">Acquired</th>
+                    {canManageInventory && (
+                      <th className="py-3 pl-3 pr-4 text-right sm:pr-6">Actions</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 text-zinc-700">
                   {copies.map((copy, index) => (
-                    <tr key={copy.id} className="hover:bg-zinc-50/70">
+                    <tr key={copy.id} className="hover:bg-zinc-50/70 transition-colors">
                       <td className="py-3 pl-4 pr-3 font-semibold text-zinc-900 sm:pl-6">
                         Copy {index + 1}
                       </td>
                       <td className="px-3 py-3 font-mono font-medium text-zinc-800">
-                        {copy.barcode}
+                        <div className="inline-flex items-center gap-1.5 rounded border border-zinc-200 bg-zinc-50 px-2 py-0.5">
+                          <Barcode className="size-3 text-zinc-400" />
+                          <span>{copy.barcode}</span>
+                        </div>
                       </td>
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-1 text-zinc-600">
@@ -410,13 +462,28 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
                           <span>{copy.shelfLocation}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-3">{getCopyStatusBadge(copy.status)}</td>
-                      <td className="px-3 py-3 text-zinc-500">
+                      <td className="px-3 py-3">
+                        <CopyStatusDropdown
+                          copyId={copy.id}
+                          bookId={book.id}
+                          currentStatus={copy.status}
+                          canManage={canManageInventory}
+                        />
+                      </td>
+                      <td className="px-3 py-3 text-zinc-500 max-w-[200px] truncate">
                         {copy.conditionNotes || "Good Condition"}
                       </td>
-                      <td className="py-3 pl-3 pr-4 text-right text-zinc-500 sm:pr-6">
+                      <td className="px-3 py-3 text-zinc-500 whitespace-nowrap">
                         {new Date(copy.acquiredAt).toLocaleDateString()}
                       </td>
+                      {canManageInventory && (
+                        <td className="py-3 pl-3 pr-4 text-right sm:pr-6">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <EditCopyDialog copy={copy} bookTitle={book.title} />
+                            <DeleteCopyDialog copy={copy} bookTitle={book.title} />
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
