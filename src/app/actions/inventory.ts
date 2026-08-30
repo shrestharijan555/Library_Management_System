@@ -1,3 +1,4 @@
+// src/app/actions/inventory.ts
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -53,7 +54,7 @@ export interface InventoryActionResult {
  * Recalculates and updates `totalCopies` and `availableCopies` on the books table
  * to ensure 100% data consistency.
  */
-async function syncBookCopyCounters(bookId: string): Promise<void> {
+export async function syncBookCopyCounters(bookId: string): Promise<void> {
   const [totalRes] = await db
     .select({ count: count() })
     .from(bookCopies)
