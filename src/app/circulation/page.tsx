@@ -10,7 +10,7 @@ import { IssueDeskTab } from "@/components/circulation/issue-desk-tab";
 import { ReturnDeskTab } from "@/components/circulation/return-desk-tab";
 import { LoansLiveTable, CirculationLoanItem } from "@/components/circulation/loans-live-table";
 import { ReservationsDeskTab, ReservationQueueItem } from "@/components/circulation/reservations-desk-tab";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/circulation/circulation-tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowRightLeft, BookUp, BookDown, ListOrdered } from "lucide-react";
 
 export const metadata: Metadata = {

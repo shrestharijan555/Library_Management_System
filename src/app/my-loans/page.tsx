@@ -8,7 +8,7 @@ import { MyActiveLoans, MyLoanItem } from "@/components/my-loans/my-active-loans
 import { MyReservations, MyReservationItem } from "@/components/my-loans/my-reservations";
 import { MyHistory, MyHistoryItem } from "@/components/my-loans/my-history";
 import { MyFinesSummary, MyFineItem } from "@/components/my-loans/my-fines-summary";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/circulation/circulation-tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BookOpen, ListOrdered, History, DollarSign } from "lucide-react";
 
 export const metadata: Metadata = {
