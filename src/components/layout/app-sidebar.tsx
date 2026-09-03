@@ -14,7 +14,6 @@ import {
   FileText,
   Settings,
   Shield,
-  Clock,
 } from "lucide-react";
 import { MAIN_NAV_ITEMS, siteConfig } from "@/config/site";
 import type { UserRole } from "@/config/roles";
@@ -94,11 +93,6 @@ export function AppSidebar({ user, onNavigate }: AppSidebarProps) {
           {allowedNavItems.map((item) => {
             const Icon = NAV_ICON_MAP[item.href] || LayoutDashboard;
             const isActive = pathname === item.href;
-            const isImplemented =
-              item.href === "/dashboard" ||
-              item.href.startsWith("/catalogue") ||
-              item.href.startsWith("/members");
-
             return (
               <Link
                 key={item.href}
@@ -119,19 +113,6 @@ export function AppSidebar({ user, onNavigate }: AppSidebarProps) {
                   />
                   <span>{item.title}</span>
                 </div>
-
-                {!isImplemented && (
-                  <span
-                    className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                      isActive
-                        ? "bg-zinc-800 text-zinc-300"
-                        : "bg-zinc-100 text-zinc-500 group-hover:bg-zinc-200"
-                    }`}
-                  >
-                    <Clock className="size-2.5" />
-                    Soon
-                  </span>
-                )}
               </Link>
             );
           })}
