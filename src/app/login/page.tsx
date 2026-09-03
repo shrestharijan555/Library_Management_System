@@ -20,7 +20,8 @@ import {
   Briefcase,
 } from "lucide-react";
 import { loginAction, type AuthActionResult } from "@/app/actions/auth";
-import { seedDemoAccountsAction, DEMO_ACCOUNTS } from "@/app/actions/seed";
+import { seedDemoAccountsAction } from "@/app/actions/seed";
+import { DEMO_ACCOUNTS, type DemoAccount } from "@/config/demo-accounts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,7 +51,7 @@ function LoginForm() {
   const [seedNotice, setSeedNotice] = useState<string | null>(null);
   const [isSeeding, startSeeding] = useTransition();
 
-  const handleSelectDemo = (account: (typeof DEMO_ACCOUNTS)[0]) => {
+  const handleSelectDemo = (account: DemoAccount) => {
     setEmail(account.email);
     setPassword(account.password);
     setSelectedRole(account.role);
