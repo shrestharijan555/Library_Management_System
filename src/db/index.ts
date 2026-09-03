@@ -10,7 +10,8 @@ declare global {
 }
 
 function createDbClient() {
-  if (!connectionString) {
+  const conn = process.env.DATABASE_URL || "";
+  if (!conn) {
     // Return a dummy/lazy initialized instance during builds when DATABASE_URL is not set
     const fallbackClient = postgres("postgres://postgres:postgres@localhost:5432/placeholder", {
       max: 1,
@@ -21,8 +22,10 @@ function createDbClient() {
     return drizzle(fallbackClient, { schema });
   }
 
-  const queryClient = postgres(connectionString, {
+  const isLocal = conn.includes("localhost") || conn.includes("127.0.0.1");
+  const queryClient = postgres(conn, {
     prepare: false,
+    ssl: isLocal ? false : "require",
   });
 
   return drizzle(queryClient, { schema });
