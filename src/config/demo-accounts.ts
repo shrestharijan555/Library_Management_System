@@ -30,7 +30,7 @@ export const DEMO_ACCOUNTS = [
     password: "Student@12345",
     fullName: "Alex Rivera",
     memberCode: "STU-0001",
-    gradeLevel: "Grade 11",
+    gradeClass: "Grade 11",
   },
 ];
 

@@ -79,7 +79,7 @@ export async function seedDemoAccountsAction(): Promise<SeedResult> {
         role: account.role,
         status: "active",
         department: "department" in account ? account.department : null,
-        gradeLevel: "gradeLevel" in account ? account.gradeLevel : null,
+        gradeClass: "gradeClass" in account ? account.gradeClass : null,
       });
       createdCount++;
     } else {

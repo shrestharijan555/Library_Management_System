@@ -94,7 +94,7 @@ async function main() {
           role: acc.role,
           status: "active",
           department: "department" in acc ? acc.department : null,
-          gradeLevel: "gradeLevel" in acc ? acc.gradeLevel : null,
+          gradeClass: "gradeClass" in acc ? acc.gradeClass : null,
         })
         .returning();
       seededUsers[acc.role] = inserted.id;
@@ -373,7 +373,7 @@ async function main() {
         bookId: sampleCopy.bookId,
         copyId: sampleCopy.id,
         userId: seededUsers.student,
-        issuedBy: seededUsers.librarian || seededUsers.admin || seededUsers.student,
+        issuedById: seededUsers.librarian || seededUsers.admin || seededUsers.student,
         status: "active",
         dueDate,
       });
