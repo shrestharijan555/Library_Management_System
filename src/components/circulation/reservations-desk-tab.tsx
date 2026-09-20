@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  BookmarkCheck,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -28,6 +30,7 @@ export interface ReservationQueueItem {
   memberCode: string;
   userRole: string;
   reservationDate: string;
+  expiryDate?: string | null;
   queuePosition: number;
   status: "pending" | "fulfilled" | "cancelled" | "expired";
 }
@@ -39,6 +42,7 @@ interface ReservationsDeskTabProps {
 export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTabProps) {
   const [list, setList] = useState<ReservationQueueItem[]>(initialReservations);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [, startTransition] = useTransition();
 
@@ -62,8 +66,17 @@ export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTab
     });
   };
 
+  const filtered = list.filter((r) => {
+    if (statusFilter === "all") return true;
+    return r.status === statusFilter;
+  });
+
+  const readyCount = list.filter((r) => r.status === "fulfilled").length;
+  const pendingCount = list.filter((r) => r.status === "pending").length;
+
   return (
     <div className="space-y-4">
+      {/* Notice Banner */}
       {message && (
         <div
           className={`p-3.5 rounded-xl text-sm flex items-center gap-2.5 animate-in fade-in ${
@@ -81,37 +94,74 @@ export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTab
         </div>
       )}
 
+      {/* Filter Tabs & Counts */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant={statusFilter === "all" ? "default" : "outline"}
+            onClick={() => setStatusFilter("all")}
+            className="text-xs h-8"
+          >
+            All Active ({list.length})
+          </Button>
+          <Button
+            size="sm"
+            variant={statusFilter === "fulfilled" ? "default" : "outline"}
+            onClick={() => setStatusFilter("fulfilled")}
+            className="text-xs h-8"
+          >
+            <BookmarkCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+            Ready for Pickup ({readyCount})
+          </Button>
+          <Button
+            size="sm"
+            variant={statusFilter === "pending" ? "default" : "outline"}
+            onClick={() => setStatusFilter("pending")}
+            className="text-xs h-8"
+          >
+            In Queue ({pendingCount})
+          </Button>
+        </div>
+      </div>
+
       <Card className="border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm border-collapse">
             <thead>
               <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-medium text-xs uppercase tracking-wider">
-                <th className="p-3.5 pl-4 text-center w-16">Queue</th>
-                <th className="p-3.5">Book Title & Availability</th>
+                <th className="p-3.5 pl-4 text-center w-16">Position</th>
+                <th className="p-3.5">Book Title & Holdings</th>
                 <th className="p-3.5">Reserving Member</th>
-                <th className="p-3.5">Hold Placed</th>
+                <th className="p-3.5">Hold Date / Expiry</th>
                 <th className="p-3.5">Status</th>
                 <th className="p-3.5 pr-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {list.length === 0 ? (
+              {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-zinc-500 dark:text-zinc-400">
-                    No active hold reservations currently in queue.
+                    No hold reservations match the selected filter.
                   </td>
                 </tr>
               ) : (
-                list.map((res) => (
+                filtered.map((res) => (
                   <tr
                     key={res.id}
                     className="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition-colors"
                   >
                     {/* Position */}
                     <td className="p-3.5 pl-4 text-center">
-                      <span className="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold font-mono text-xs flex items-center justify-center mx-auto border border-indigo-200 dark:border-indigo-800">
-                        #{res.queuePosition}
-                      </span>
+                      {res.status === "fulfilled" ? (
+                        <span className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-bold text-xs flex items-center justify-center mx-auto border border-emerald-300 dark:border-emerald-800">
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold font-mono text-xs flex items-center justify-center mx-auto border border-indigo-200 dark:border-indigo-800">
+                          #{res.queuePosition}
+                        </span>
+                      )}
                     </td>
 
                     {/* Book */}
@@ -136,7 +186,7 @@ export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTab
                             {res.bookTitle}
                           </Link>
                           <div className="text-[11px] text-zinc-500 mt-0.5">
-                            Available:{" "}
+                            Available Copies:{" "}
                             <strong className="text-zinc-700 dark:text-zinc-300">
                               {res.availableCopies} / {res.totalCopies}
                             </strong>
@@ -162,9 +212,15 @@ export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTab
                       </div>
                     </td>
 
-                    {/* Hold Date */}
+                    {/* Hold Date & Expiry */}
                     <td className="p-3.5 text-zinc-600 dark:text-zinc-400 text-xs">
-                      {new Date(res.reservationDate).toLocaleDateString()}
+                      <div>Placed: {new Date(res.reservationDate).toLocaleDateString()}</div>
+                      {res.expiryDate && (
+                        <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5 font-medium">
+                          <Clock className="w-3 h-3" />
+                          Hold expires: {new Date(res.expiryDate).toLocaleDateString()}
+                        </div>
+                      )}
                     </td>
 
                     {/* Status */}
@@ -179,7 +235,7 @@ export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTab
                         }
                         className="capitalize"
                       >
-                        {res.status}
+                        {res.status === "fulfilled" ? "Ready for Pickup" : res.status}
                       </Badge>
                     </td>
 

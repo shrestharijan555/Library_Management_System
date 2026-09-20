@@ -9,6 +9,7 @@ import { bookCopies } from "./book-copies";
 import { loans } from "./loans";
 import { reservations } from "./reservations";
 import { fines } from "./fines";
+import { notifications } from "./notifications";
 import { auditLogs } from "./audit-logs";
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -17,6 +18,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   reservations: many(reservations),
   fines: many(fines, { relationName: "user_fines" }),
   waivedFines: many(fines, { relationName: "waived_fines" }),
+  notifications: many(notifications),
   auditLogs: many(auditLogs),
 }));
 
@@ -122,3 +124,11 @@ export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+

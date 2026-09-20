@@ -10,6 +10,7 @@ import type {
   loans,
   reservations,
   fines,
+  notifications,
   auditLogs,
   systemSettings,
 } from "@/db/schema";
@@ -49,6 +50,9 @@ export type NewReservation = InferInsertModel<typeof reservations>;
 
 export type Fine = InferSelectModel<typeof fines>;
 export type NewFine = InferInsertModel<typeof fines>;
+
+export type Notification = InferSelectModel<typeof notifications>;
+export type NewNotification = InferInsertModel<typeof notifications>;
 
 export type AuditLog = InferSelectModel<typeof auditLogs>;
 export type NewAuditLog = InferInsertModel<typeof auditLogs>;

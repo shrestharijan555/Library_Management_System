@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { desc, eq, and } from "drizzle-orm";
+import { desc, eq, and, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { loans, bookCopies, books, reservations, fines, authors, bookAuthors } from "@/db/schema";
 import { requireAuthUser } from "@/lib/auth/session";
@@ -76,7 +76,7 @@ export default async function MyLoansPage() {
     });
   }
 
-  // 2. Fetch reservations
+  // 2. Fetch reservations (both pending in queue and fulfilled ready for pickup)
   const reservationsRaw = await db
     .select({
       id: reservations.id,
@@ -84,12 +84,18 @@ export default async function MyLoansPage() {
       bookTitle: books.title,
       bookCoverUrl: books.coverImageUrl,
       reservationDate: reservations.reservationDate,
+      expiryDate: reservations.expiryDate,
       queuePosition: reservations.queuePosition,
       status: reservations.status,
     })
     .from(reservations)
     .innerJoin(books, eq(reservations.bookId, books.id))
-    .where(and(eq(reservations.userId, userId), eq(reservations.status, "pending")))
+    .where(
+      and(
+        eq(reservations.userId, userId),
+        sql`${reservations.status} IN ('pending', 'fulfilled')`
+      )
+    )
     .orderBy(reservations.reservationDate);
 
   const reservationItems: MyReservationItem[] = [];
@@ -107,6 +113,7 @@ export default async function MyLoansPage() {
       bookCoverUrl: r.bookCoverUrl,
       authors: bookAuthorsList.map((a) => a.name),
       reservationDate: r.reservationDate.toISOString(),
+      expiryDate: r.expiryDate ? r.expiryDate.toISOString() : null,
       queuePosition: r.queuePosition,
       status: r.status as "pending" | "fulfilled" | "cancelled" | "expired",
     });

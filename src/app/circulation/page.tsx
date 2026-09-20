@@ -1,7 +1,7 @@
 // src/app/circulation/page.tsx
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { loans, bookCopies, books, users, reservations } from "@/db/schema";
 import { requireAuthUser } from "@/lib/auth/session";
@@ -79,7 +79,7 @@ export default async function CirculationPage() {
     renewalCount: l.renewalCount,
   }));
 
-  // 2. Fetch pending reservations queue
+  // 2. Fetch active reservations queue (pending waitlist & fulfilled ready holds)
   const rawReservations = await db
     .select({
       id: reservations.id,
@@ -94,13 +94,14 @@ export default async function CirculationPage() {
       memberCode: users.memberCode,
       userRole: users.role,
       reservationDate: reservations.reservationDate,
+      expiryDate: reservations.expiryDate,
       queuePosition: reservations.queuePosition,
       status: reservations.status,
     })
     .from(reservations)
     .innerJoin(books, eq(reservations.bookId, books.id))
     .innerJoin(users, eq(reservations.userId, users.id))
-    .where(eq(reservations.status, "pending"))
+    .where(sql`${reservations.status} IN ('pending', 'fulfilled')`)
     .orderBy(reservations.queuePosition);
 
   const formattedReservations: ReservationQueueItem[] = rawReservations.map((r) => ({
@@ -116,6 +117,7 @@ export default async function CirculationPage() {
     memberCode: r.memberCode,
     userRole: r.userRole,
     reservationDate: r.reservationDate.toISOString(),
+    expiryDate: r.expiryDate ? r.expiryDate.toISOString() : null,
     queuePosition: r.queuePosition,
     status: r.status as "pending" | "fulfilled" | "cancelled" | "expired",
   }));

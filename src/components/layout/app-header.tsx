@@ -3,6 +3,7 @@
 import React from "react";
 import { Menu, BookOpen, ShieldCheck } from "lucide-react";
 import { UserMenu } from "./user-menu";
+import { NotificationBell } from "./notification-bell";
 import type { User } from "@/types";
 import { siteConfig } from "@/config/site";
 import { Badge } from "@/components/ui/badge";
@@ -52,12 +53,15 @@ export function AppHeader({
         </div>
       </div>
 
-      {/* Right Area: System Name & User Menu */}
+      {/* Right Area: System Name, Notifications & User Menu */}
       <div className="flex items-center gap-3">
         <div className="hidden items-center gap-2 border-r border-zinc-200 pr-3 text-xs text-zinc-500 xl:flex">
           <BookOpen className="size-3.5 text-zinc-400" />
           <span>{siteConfig.name}</span>
         </div>
+
+        {/* In-App Notifications Bell Popover */}
+        <NotificationBell />
 
         {/* User Account Popover */}
         <UserMenu user={user} />

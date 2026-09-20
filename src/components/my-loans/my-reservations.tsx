@@ -8,6 +8,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  BookmarkCheck,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -22,6 +24,7 @@ export interface MyReservationItem {
   bookCoverUrl: string | null;
   authors: string[];
   reservationDate: string;
+  expiryDate?: string | null;
   queuePosition: number;
   status: "pending" | "fulfilled" | "cancelled" | "expired";
 }
@@ -90,7 +93,11 @@ export function MyReservations({ reservations: initial }: MyReservationsProps) {
           {list.map((res) => (
             <Card
               key={res.id}
-              className="border border-zinc-200 dark:border-zinc-800 overflow-hidden"
+              className={`border overflow-hidden ${
+                res.status === "fulfilled"
+                  ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50/20 dark:bg-emerald-950/20"
+                  : "border-zinc-200 dark:border-zinc-800"
+              }`}
             >
               <div className="p-4 flex gap-4">
                 {res.bookCoverUrl ? (
@@ -115,10 +122,10 @@ export function MyReservations({ reservations: initial }: MyReservationsProps) {
                         {res.bookTitle}
                       </Link>
                       <Badge
-                        variant={res.status === "pending" ? "warning" : "success"}
+                        variant={res.status === "fulfilled" ? "success" : "warning"}
                         className="capitalize text-[10px]"
                       >
-                        {res.status}
+                        {res.status === "fulfilled" ? "Ready for Pickup" : res.status}
                       </Badge>
                     </div>
                     <p className="text-xs text-zinc-500 truncate mt-0.5">
@@ -126,15 +133,30 @@ export function MyReservations({ reservations: initial }: MyReservationsProps) {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-2">
-                    <span className="text-zinc-500">Waitlist Position:</span>
-                    <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">
-                      #{res.queuePosition} in queue
-                    </span>
-                  </div>
+                  {res.status === "fulfilled" ? (
+                    <div className="p-2 rounded-lg bg-emerald-100/60 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-300 text-xs flex items-center gap-1.5 my-1">
+                      <BookmarkCheck className="w-4 h-4 shrink-0 text-emerald-600" />
+                      <div className="min-w-0">
+                        <span className="font-semibold block">Available at circulation desk!</span>
+                        {res.expiryDate && (
+                          <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block">
+                            Pick up by {new Date(res.expiryDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-xs pt-2">
+                      <span className="text-zinc-500">Waitlist Position:</span>
+                      <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+                        #{res.queuePosition} in queue
+                      </span>
+                    </div>
+                  )}
 
                   <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                    <span className="text-[11px] text-zinc-400">
+                    <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
                       Reserved: {new Date(res.reservationDate).toLocaleDateString()}
                     </span>
 

@@ -9,6 +9,7 @@ export * from "./book-copies";
 export * from "./loans";
 export * from "./reservations";
 export * from "./fines";
+export * from "./notifications";
 export * from "./audit-logs";
 export * from "./settings";
 export * from "./relations";

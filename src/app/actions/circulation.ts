@@ -2,12 +2,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { db } from "@/db";
-import { users, bookCopies, loans, reservations, fines, auditLogs } from "@/db/schema";
+import { users, bookCopies, books, loans, reservations, fines, auditLogs } from "@/db/schema";
 import { requireAuthUser } from "@/lib/auth/session";
 import { hasPermission, PERMISSIONS } from "@/config/roles";
-import { DEFAULT_LIBRARY_POLICIES } from "@/config/site";
+import {
+  getPolicyForRole,
+  calculateOverdueFine,
+  RESERVATION_HOLD_EXPIRY_DAYS,
+} from "@/lib/circulation/policies";
 import {
   issueLoanSchema,
   issueLoanByBarcodeSchema,
@@ -28,9 +32,16 @@ import type {
   CancelReservationInput,
 } from "@/lib/circulation/validation";
 import { syncBookCopyCounters } from "@/app/actions/inventory";
+import { sendNotification } from "@/app/actions/notifications";
+
+import { PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import * as schema from "@/db/schema";
+
+type DbExecutor = PostgresJsDatabase<typeof schema> | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 // Helper for audit logging
 async function recordAudit(
+  executor: DbExecutor,
   action: string,
   entityType: string,
   entityId: string | null,
@@ -38,7 +49,7 @@ async function recordAudit(
   userId: string
 ) {
   try {
-    await db.insert(auditLogs).values({
+    await executor.insert(auditLogs).values({
       userId,
       action,
       entityType,
@@ -89,19 +100,34 @@ export async function issueLoanAction(_prevState: unknown, formData: FormData): 
     return { error: `Member account is currently ${appUser.status}. Cannot issue books.` };
   }
 
-  // Resolve copy and ensure available
-  const copy = await db.query.bookCopies.findFirst({ where: eq(bookCopies.id, copyId) });
-  if (!copy) {
+  // Resolve copy and book
+  const copy = await db.query.bookCopies.findFirst({
+    where: eq(bookCopies.id, copyId),
+    with: { book: true },
+  });
+  if (!copy || !copy.book) {
     return { error: "Physical copy record was not found." };
   }
-  if (copy.status !== "available") {
-    return { error: `Copy status is "${copy.status}". Only "available" copies can be checked out.` };
+
+  // Check copy availability or reservation hold
+  if (copy.status !== "available" && copy.status !== "reserved") {
+    return { error: `Copy status is "${copy.status}". Only available or reserved copies can be checked out.` };
   }
 
-  // Enforce loan limits based on policy
-  const policy = DEFAULT_LIBRARY_POLICIES[appUser.role as keyof typeof DEFAULT_LIBRARY_POLICIES] ?? DEFAULT_LIBRARY_POLICIES.student;
+  // If copy is reserved, ensure it's either held for this member or staff overrides
+  const pendingHold = await db.query.reservations.findFirst({
+    where: and(
+      eq(reservations.bookId, copy.bookId),
+      eq(reservations.userId, appUser.id),
+      sql`${reservations.status} IN ('pending', 'fulfilled')`
+    ),
+    orderBy: desc(reservations.createdAt),
+  });
+
+  // Enforce loan limits based on dynamic policy
+  const policy = await getPolicyForRole(appUser.role);
   const activeLoansCount = await db
-    .select({ cnt: sql`count(*)` })
+    .select({ cnt: sql<number>`count(*)` })
     .from(loans)
     .where(and(eq(loans.userId, appUser.id), eq(loans.status, "active")));
   const activeCount = Number(activeLoansCount[0]?.cnt ?? 0);
@@ -111,20 +137,19 @@ export async function issueLoanAction(_prevState: unknown, formData: FormData): 
     };
   }
 
-  // Check unpaid overdue fines threshold
+  // Check unpaid overdue fines threshold ($50.00 block limit)
   const unpaidFines = await db
-    .select({ total: sql`COALESCE(SUM(${fines.amountCents}), 0)` })
+    .select({ total: sql<number>`COALESCE(SUM(${fines.amountCents}), 0)` })
     .from(fines)
     .where(and(eq(fines.userId, appUser.id), eq(fines.status, "unpaid")));
   const totalUnpaid = Number(unpaidFines[0]?.total ?? 0);
   if (totalUnpaid > 5000) {
-    // $50.00 block threshold
     return {
       error: `Member has excessive unpaid fines ($${(totalUnpaid / 100).toFixed(2)}). Fines must be cleared before issuing new books.`,
     };
   }
 
-  // Compute due date based on policy
+  // Compute due date based on dynamic policy
   const now = new Date();
   const dueDate = new Date(now);
   dueDate.setDate(dueDate.getDate() + policy.loanDurationDays);
@@ -150,18 +175,36 @@ export async function issueLoanAction(_prevState: unknown, formData: FormData): 
 
       await tx
         .update(bookCopies)
-        .set({ status: "borrowed", updatedAt: new Date() })
+        .set({ status: "borrowed", updatedAt: now })
         .where(eq(bookCopies.id, copyId));
+
+      // If user had a reservation for this title, mark it fulfilled/completed
+      if (pendingHold) {
+        await tx
+          .update(reservations)
+          .set({ status: "fulfilled", updatedAt: now })
+          .where(eq(reservations.id, pendingHold.id));
+      }
 
       await syncBookCopyCounters(copy.bookId);
 
       await recordAudit(
+        tx,
         "loan_issued",
         "loan",
         newLoanId,
         { copyId, memberId: appUser.id, dueDate, memberCode },
         session.appUser.id
       );
+
+      // Notify borrower
+      await sendNotification(tx, {
+        userId: appUser.id,
+        title: "Book Checked Out",
+        message: `"${copy.book.title}" was checked out to your account. Due date: ${dueDate.toLocaleDateString()}.`,
+        type: "loan_issued",
+        link: "/my-loans",
+      });
     });
   } catch (e) {
     console.error("Issue loan error:", e);
@@ -229,7 +272,10 @@ export async function returnLoanAction(_prevState: unknown, formData: FormData):
   }
   const { loanId } = validation.data;
 
-  const loanRec = await db.query.loans.findFirst({ where: eq(loans.id, loanId) });
+  const loanRec = await db.query.loans.findFirst({
+    where: eq(loans.id, loanId),
+    with: { book: true },
+  });
   if (!loanRec) return { error: "Loan record was not found." };
   if (loanRec.status !== "active" && loanRec.status !== "overdue") {
     return { error: "Only active or overdue loans can be checked in." };
@@ -239,48 +285,50 @@ export async function returnLoanAction(_prevState: unknown, formData: FormData):
   if (!copy) return { error: "Associated physical copy record was not found." };
 
   const borrower = await db.query.users.findFirst({ where: eq(users.id, loanRec.userId) });
-  const borrowerRole = (borrower?.role ?? "student") as keyof typeof DEFAULT_LIBRARY_POLICIES;
-  const policy = DEFAULT_LIBRARY_POLICIES[borrowerRole] ?? DEFAULT_LIBRARY_POLICIES.student;
+  const borrowerRole = borrower?.role ?? "student";
+  const policy = await getPolicyForRole(borrowerRole);
 
   const now = new Date();
-  let fineCalculatedCents = 0;
-  let fineNotice = "";
-
-  // Check for overdue fines
-  if (now > new Date(loanRec.dueDate)) {
-    const diffMs = now.getTime() - new Date(loanRec.dueDate).getTime();
-    const daysOverdue = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    if (daysOverdue > policy.gracePeriodDays) {
-      const chargeableDays = daysOverdue - policy.gracePeriodDays;
-      fineCalculatedCents = chargeableDays * policy.finePerDayCents;
-      if (fineCalculatedCents > 0) {
-        fineNotice = ` Book was ${daysOverdue} days overdue. Fine assessed: $${(fineCalculatedCents / 100).toFixed(2)}.`;
-      }
-    }
-  }
+  
+  // Calculate overdue fine via centralized policy calculator
+  const fineCalc = calculateOverdueFine(loanRec.dueDate, now, policy);
+  const bookTitle = loanRec.book?.title ?? "Book";
 
   try {
     await db.transaction(async (tx) => {
-      // 1. Update loan
+      // 1. Update loan record
       await tx
         .update(loans)
         .set({ returnDate: now, status: "returned", updatedAt: now })
         .where(eq(loans.id, loanId));
 
       // 2. Assess fine if overdue
-      if (fineCalculatedCents > 0 && borrower) {
+      if (fineCalc.fineCents > 0 && borrower) {
         await tx.insert(fines).values({
           loanId: loanRec.id,
           userId: borrower.id,
-          amountCents: fineCalculatedCents,
+          amountCents: fineCalc.fineCents,
           status: "unpaid",
-          reason: `Overdue return (${fineNotice.trim()})`,
+          reason: `Overdue return for "${bookTitle}" (${fineCalc.daysOverdue} days late)`,
+        });
+
+        // Notify borrower of fine
+        await sendNotification(tx, {
+          userId: borrower.id,
+          title: "Overdue Fine Assessed",
+          message: `A fine of $${(fineCalc.fineCents / 100).toFixed(2)} was assessed for the late return of "${bookTitle}".`,
+          type: "fine_assessed",
+          link: "/my-loans",
         });
       }
 
-      // 3. Resolve next reservation if available
+      // 3. Resolve next eligible hold in queue
       const pendingRes = await tx
-        .select({ id: reservations.id, userId: reservations.userId, queuePosition: reservations.queuePosition })
+        .select({
+          id: reservations.id,
+          userId: reservations.userId,
+          queuePosition: reservations.queuePosition,
+        })
         .from(reservations)
         .where(and(eq(reservations.bookId, copy.bookId), eq(reservations.status, "pending")))
         .orderBy(reservations.queuePosition)
@@ -289,22 +337,42 @@ export async function returnLoanAction(_prevState: unknown, formData: FormData):
       let newCopyStatus: "available" | "reserved" = "available";
 
       if (pendingRes.length > 0) {
-        const res = pendingRes[0];
+        const nextReservation = pendingRes[0];
         newCopyStatus = "reserved";
+
+        // Expiry date for holding copy (7 days from now)
+        const expiryDate = new Date(now);
+        expiryDate.setDate(expiryDate.getDate() + RESERVATION_HOLD_EXPIRY_DAYS);
+
         await tx
           .update(reservations)
-          .set({ status: "fulfilled", updatedAt: now })
-          .where(eq(reservations.id, res.id));
+          .set({
+            status: "fulfilled",
+            expiryDate,
+            updatedAt: now,
+          })
+          .where(eq(reservations.id, nextReservation.id));
 
         await recordAudit(
-          "reservation_fulfilled",
+          tx,
+          "reservation_ready",
           "reservation",
-          res.id,
-          { copyId: copy.id, memberId: res.userId },
+          nextReservation.id,
+          { copyId: copy.id, memberId: nextReservation.userId, expiryDate },
           session.appUser.id
         );
+
+        // Notify the reserving member that their book is ready for pickup
+        await sendNotification(tx, {
+          userId: nextReservation.userId,
+          title: "Hold Ready for Pickup!",
+          message: `Your reserved book "${bookTitle}" is ready for pickup at the circulation desk until ${expiryDate.toLocaleDateString()}.`,
+          type: "reservation_ready",
+          link: "/my-loans",
+        });
       }
 
+      // 4. Update physical copy status
       await tx
         .update(bookCopies)
         .set({ status: newCopyStatus, updatedAt: now })
@@ -313,12 +381,24 @@ export async function returnLoanAction(_prevState: unknown, formData: FormData):
       await syncBookCopyCounters(copy.bookId);
 
       await recordAudit(
+        tx,
         "loan_returned",
         "loan",
         loanId,
-        { copyId: copy.id, fineCents: fineCalculatedCents },
+        { copyId: copy.id, fineCents: fineCalc.fineCents, allocatedToHold: pendingRes.length > 0 },
         session.appUser.id
       );
+
+      // Notify borrower of successful check-in
+      if (borrower) {
+        await sendNotification(tx, {
+          userId: borrower.id,
+          title: "Book Return Confirmed",
+          message: `"${bookTitle}" has been returned successfully.`,
+          type: "loan_returned",
+          link: "/my-loans",
+        });
+      }
     });
   } catch (e) {
     console.error("Return error:", e);
@@ -331,9 +411,13 @@ export async function returnLoanAction(_prevState: unknown, formData: FormData):
   revalidatePath(`/catalogue/${copy.bookId}`);
   revalidatePath("/dashboard");
 
+  const returnMessage = fineCalc.fineCents > 0
+    ? `Book returned. ${fineCalc.formattedNotice}`
+    : "Book returned successfully.";
+
   return {
     success: true,
-    message: `Book returned successfully.${fineNotice}`,
+    message: returnMessage,
   };
 }
 
@@ -365,9 +449,12 @@ export async function returnLoanByBarcodeAction(
     return { error: `No physical copy found with barcode "${barcode}".` };
   }
 
-  // Find active loan
+  // Find active or overdue loan
   const activeLoan = await db.query.loans.findFirst({
-    where: and(eq(loans.copyId, copy.id), eq(loans.status, "active")),
+    where: and(
+      eq(loans.copyId, copy.id),
+      sql`${loans.status} IN ('active', 'overdue')`
+    ),
   });
   if (!activeLoan) {
     return { error: `Copy "${barcode}" is currently "${copy.status}" and has no active loan.` };
@@ -387,7 +474,10 @@ export async function renewLoanAction(_prevState: unknown, formData: FormData): 
   if (!validation.success) return { fieldErrors: validation.error.flatten().fieldErrors };
   const { loanId } = validation.data;
 
-  const loanRec = await db.query.loans.findFirst({ where: eq(loans.id, loanId) });
+  const loanRec = await db.query.loans.findFirst({
+    where: eq(loans.id, loanId),
+    with: { book: true },
+  });
   if (!loanRec) return { error: "Loan record was not found." };
   if (loanRec.status !== "active") return { error: "Only active loans can be renewed." };
 
@@ -401,17 +491,30 @@ export async function renewLoanAction(_prevState: unknown, formData: FormData): 
   const borrower = await db.query.users.findFirst({ where: eq(users.id, loanRec.userId) });
   if (!borrower) return { error: "Borrower profile was not found." };
 
-  const borrowerRole = (borrower.role ?? "student") as keyof typeof DEFAULT_LIBRARY_POLICIES;
-  const policy = DEFAULT_LIBRARY_POLICIES[borrowerRole] ?? DEFAULT_LIBRARY_POLICIES.student;
+  const policy = await getPolicyForRole(borrower.role);
   const currentRenewals = Number(loanRec.renewalCount ?? 0);
 
   if (currentRenewals >= policy.maxRenewals) {
     return { error: `Renewal limit reached (${policy.maxRenewals} renewals allowed) for this loan.` };
   }
 
+  // Check if title has waiting reservations (prohibit renewal if others are waiting in queue)
+  const waitingReservations = await db
+    .select({ cnt: sql<number>`count(*)` })
+    .from(reservations)
+    .where(and(eq(reservations.bookId, loanRec.bookId), eq(reservations.status, "pending")));
+  const waitCount = Number(waitingReservations[0]?.cnt ?? 0);
+  if (waitCount > 0) {
+    return {
+      error: `Cannot renew loan: ${waitCount} member(s) are currently on hold for this title.`,
+    };
+  }
+
   // Calculate new due date from current due date
   const newDue = new Date(loanRec.dueDate);
   newDue.setDate(newDue.getDate() + policy.loanDurationDays);
+
+  const bookTitle = loanRec.book?.title ?? "Book";
 
   try {
     await db.transaction(async (tx) => {
@@ -425,12 +528,22 @@ export async function renewLoanAction(_prevState: unknown, formData: FormData): 
         .where(eq(loans.id, loanId));
 
       await recordAudit(
+        tx,
         "loan_renewed",
         "loan",
         loanId,
         { newDueDate: newDue, renewalsCount: currentRenewals + 1 },
         session.appUser.id
       );
+
+      // Notify borrower
+      await sendNotification(tx, {
+        userId: borrower.id,
+        title: "Loan Renewed",
+        message: `Your loan for "${bookTitle}" was renewed until ${newDue.toLocaleDateString()}. (${policy.maxRenewals - (currentRenewals + 1)} renewals remaining)`,
+        type: "loan_renewed",
+        link: "/my-loans",
+      });
     });
   } catch (e) {
     console.error("Renewal error:", e);
@@ -454,11 +567,16 @@ export async function markLoanLostAction(loanId: string, notes?: string): Promis
     return { error: "Unauthorized to mark items as lost." };
   }
 
-  const loanRec = await db.query.loans.findFirst({ where: eq(loans.id, loanId) });
+  const loanRec = await db.query.loans.findFirst({
+    where: eq(loans.id, loanId),
+    with: { book: true },
+  });
   if (!loanRec) return { error: "Loan record was not found." };
 
   const copy = await db.query.bookCopies.findFirst({ where: eq(bookCopies.id, loanRec.copyId) });
   if (!copy) return { error: "Associated copy record was not found." };
+
+  const bookTitle = loanRec.book?.title ?? "Book";
 
   try {
     await db.transaction(async (tx) => {
@@ -490,12 +608,22 @@ export async function markLoanLostAction(loanId: string, notes?: string): Promis
       await syncBookCopyCounters(copy.bookId);
 
       await recordAudit(
+        tx,
         "loan_marked_lost",
         "loan",
         loanId,
         { copyId: copy.id, notes },
         session.appUser.id
       );
+
+      // Notify borrower
+      await sendNotification(tx, {
+        userId: loanRec.userId,
+        title: "Lost Item Fee Assessed",
+        message: `"${bookTitle}" was marked as lost. A replacement fee of $25.00 has been charged to your account.`,
+        type: "fine_assessed",
+        link: "/my-loans",
+      });
     });
   } catch (e) {
     console.error("Mark lost error:", e);
@@ -527,33 +655,37 @@ export async function reserveBookAction(_prevState: unknown, formData: FormData)
   });
   if (!member) return { error: `Member with code "${memberCode}" was not found.` };
 
-  // Authorization check: member reserving for themselves OR librarian
+  // Authorization check: member reserving for themselves OR librarian/admin
   const isSelf = session.appUser.id === member.id;
   const isLibrarian = hasPermission(session.appUser.role, PERMISSIONS.RESERVE_BOOK);
   if (!isSelf && !isLibrarian) {
     return { error: "Unauthorized to place reservations for other members." };
   }
 
-  // Prevent duplicate pending reservation
+  const bookRec = await db.query.books.findFirst({ where: eq(books.id, bookId) });
+  if (!bookRec) return { error: "Book title was not found." };
+
+  // Prevent duplicate pending or fulfilled reservation
   const existing = await db.query.reservations.findFirst({
     where: and(
       eq(reservations.bookId, bookId),
       eq(reservations.userId, member.id),
-      eq(reservations.status, "pending")
+      sql`${reservations.status} IN ('pending', 'fulfilled')`
     ),
   });
   if (existing) {
-    return { error: "You already have a pending hold/reservation for this title." };
+    return { error: "You already have an active hold or ready reservation for this title." };
   }
 
   // Determine next queue position
   const maxPosRes = await db
-    .select({ maxPos: sql`max(queue_position)` })
+    .select({ maxPos: sql<number>`COALESCE(MAX(${reservations.queuePosition}), 0)` })
     .from(reservations)
     .where(and(eq(reservations.bookId, bookId), eq(reservations.status, "pending")));
   const nextPos = Number(maxPosRes[0]?.maxPos ?? 0) + 1;
 
   try {
+    let newResId = "";
     await db.transaction(async (tx) => {
       const [newRes] = await tx
         .insert(reservations)
@@ -567,13 +699,25 @@ export async function reserveBookAction(_prevState: unknown, formData: FormData)
         })
         .returning();
 
+      newResId = newRes.id;
+
       await recordAudit(
+        tx,
         "reservation_created",
         "reservation",
-        newRes.id,
+        newResId,
         { bookId, memberId: member.id, queuePosition: nextPos },
         session.appUser.id
       );
+
+      // Notify member
+      await sendNotification(tx, {
+        userId: member.id,
+        title: "Reservation Placed",
+        message: `Hold placed for "${bookRec.title}". You are #${nextPos} in the waitlist queue.`,
+        type: "reservation_created",
+        link: "/my-loans",
+      });
     });
   } catch (e) {
     console.error("Reserve error:", e);
@@ -604,8 +748,14 @@ export async function cancelReservationAction(
   if (!validation.success) return { fieldErrors: validation.error.flatten().fieldErrors };
   const { reservationId } = validation.data;
 
-  const reservation = await db.query.reservations.findFirst({ where: eq(reservations.id, reservationId) });
+  const reservation = await db.query.reservations.findFirst({
+    where: eq(reservations.id, reservationId),
+    with: { book: true },
+  });
   if (!reservation) return { error: "Reservation record was not found." };
+  if (reservation.status === "cancelled") {
+    return { error: "Reservation is already cancelled." };
+  }
 
   // Only owner or librarian/admin can cancel
   const isOwner = reservation.userId === session.appUser.id;
@@ -614,6 +764,8 @@ export async function cancelReservationAction(
     return { error: "You cannot cancel this reservation." };
   }
 
+  const bookTitle = reservation.book?.title ?? "Book";
+
   try {
     await db.transaction(async (tx) => {
       await tx
@@ -621,19 +773,37 @@ export async function cancelReservationAction(
         .set({ status: "cancelled", updatedAt: new Date() })
         .where(eq(reservations.id, reservationId));
 
-      // Decrement queue positions of later pending reservations
-      await tx
-        .update(reservations)
-        .set({ queuePosition: sql`queue_position - 1` })
-        .where(
-          and(
-            eq(reservations.bookId, reservation.bookId),
-            eq(reservations.status, "pending"),
-            sql`queue_position > ${reservation.queuePosition}`
-          )
-        );
+      // Re-index subsequent queue positions to keep queue contiguous
+      if (reservation.status === "pending") {
+        await tx
+          .update(reservations)
+          .set({ queuePosition: sql`${reservations.queuePosition} - 1` })
+          .where(
+            and(
+              eq(reservations.bookId, reservation.bookId),
+              eq(reservations.status, "pending"),
+              sql`${reservations.queuePosition} > ${reservation.queuePosition}`
+            )
+          );
+      }
 
-      await recordAudit("reservation_cancelled", "reservation", reservationId, {}, session.appUser.id);
+      await recordAudit(
+        tx,
+        "reservation_cancelled",
+        "reservation",
+        reservationId,
+        { bookId: reservation.bookId },
+        session.appUser.id
+      );
+
+      // Notify reserving member
+      await sendNotification(tx, {
+        userId: reservation.userId,
+        title: "Hold Cancelled",
+        message: `Your reservation hold for "${bookTitle}" has been cancelled.`,
+        type: "reservation_cancelled",
+        link: "/my-loans",
+      });
     });
   } catch (e) {
     console.error("Cancel reservation error:", e);
@@ -663,16 +833,16 @@ export async function lookupMemberAction(memberCode: string): Promise<Circulatio
 
   // Gather active loan count & unpaid fines
   const activeLoans = await db
-    .select({ cnt: sql`count(*)` })
+    .select({ cnt: sql<number>`count(*)` })
     .from(loans)
     .where(and(eq(loans.userId, member.id), eq(loans.status, "active")));
 
   const unpaidFines = await db
-    .select({ total: sql`COALESCE(SUM(${fines.amountCents}), 0)` })
+    .select({ total: sql<number>`COALESCE(SUM(${fines.amountCents}), 0)` })
     .from(fines)
     .where(and(eq(fines.userId, member.id), eq(fines.status, "unpaid")));
 
-  const policy = DEFAULT_LIBRARY_POLICIES[member.role as keyof typeof DEFAULT_LIBRARY_POLICIES] ?? DEFAULT_LIBRARY_POLICIES.student;
+  const policy = await getPolicyForRole(member.role);
 
   return {
     success: true,

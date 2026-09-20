@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { fines, users, auditLogs } from "@/db/schema";
 import { requireAuthUser } from "@/lib/auth/session";
 import { hasPermission, PERMISSIONS } from "@/config/roles";
+import { sendNotification } from "@/app/actions/notifications";
 
 const payFineSchema = z.object({
   fineId: z.string().uuid("Invalid fine ID"),
@@ -58,6 +59,8 @@ export async function payFineAction(_prevState: unknown, formData: FormData): Pr
     return { error: `Fine is already marked as ${fineRec.status}.` };
   }
 
+  const formattedAmount = (fineRec.amountCents / 100).toFixed(2);
+
   try {
     const now = new Date();
     await db.transaction(async (tx) => {
@@ -82,6 +85,15 @@ export async function payFineAction(_prevState: unknown, formData: FormData): Pr
           receiptNotes,
         }),
       });
+
+      // Send notification to borrower
+      await sendNotification(tx, {
+        userId: fineRec.userId,
+        title: "Fine Payment Confirmed",
+        message: `Your payment of $${formattedAmount} for "${fineRec.reason}" has been processed via ${paymentMethod}.`,
+        type: "fine_paid",
+        link: "/my-loans",
+      });
     });
   } catch (err) {
     console.error("Pay fine error:", err);
@@ -93,7 +105,7 @@ export async function payFineAction(_prevState: unknown, formData: FormData): Pr
   revalidatePath("/circulation");
   revalidatePath("/dashboard");
 
-  return { success: true, message: `Payment of $${(fineRec.amountCents / 100).toFixed(2)} recorded.` };
+  return { success: true, message: `Payment of $${formattedAmount} recorded.` };
 }
 
 // Waive fine
@@ -120,6 +132,8 @@ export async function waiveFineAction(_prevState: unknown, formData: FormData): 
     return { error: `Fine is already marked as ${fineRec.status}.` };
   }
 
+  const formattedAmount = (fineRec.amountCents / 100).toFixed(2);
+
   try {
     const now = new Date();
     await db.transaction(async (tx) => {
@@ -145,6 +159,15 @@ export async function waiveFineAction(_prevState: unknown, formData: FormData): 
           waivedBy: session.appUser.fullName,
         }),
       });
+
+      // Send notification to borrower
+      await sendNotification(tx, {
+        userId: fineRec.userId,
+        title: "Fine Waived",
+        message: `Your fine of $${formattedAmount} (${fineRec.reason}) has been waived by staff.`,
+        type: "fine_waived",
+        link: "/my-loans",
+      });
     });
   } catch (err) {
     console.error("Waive fine error:", err);
@@ -156,7 +179,7 @@ export async function waiveFineAction(_prevState: unknown, formData: FormData): 
   revalidatePath("/circulation");
   revalidatePath("/dashboard");
 
-  return { success: true, message: `Fine of $${(fineRec.amountCents / 100).toFixed(2)} has been waived.` };
+  return { success: true, message: `Fine of $${formattedAmount} has been waived.` };
 }
 
 // Assess manual fine
@@ -188,27 +211,40 @@ export async function createManualFineAction(
     return { error: `Member with code "${memberCode}" was not found.` };
   }
 
-  try {
-    const [newFine] = await db
-      .insert(fines)
-      .values({
-        userId: member.id,
-        amountCents,
-        status: "unpaid",
-        reason,
-      })
-      .returning();
+  const formattedAmount = (amountCents / 100).toFixed(2);
 
-    await db.insert(auditLogs).values({
-      userId: session.appUser.id,
-      action: "fine_manually_assessed",
-      entityType: "fine",
-      entityId: newFine.id,
-      details: JSON.stringify({
-        amountCents,
-        targetUserId: member.id,
-        reason,
-      }),
+  try {
+    await db.transaction(async (tx) => {
+      const [newFine] = await tx
+        .insert(fines)
+        .values({
+          userId: member.id,
+          amountCents,
+          status: "unpaid",
+          reason,
+        })
+        .returning();
+
+      await tx.insert(auditLogs).values({
+        userId: session.appUser.id,
+        action: "fine_manually_assessed",
+        entityType: "fine",
+        entityId: newFine.id,
+        details: JSON.stringify({
+          amountCents,
+          targetUserId: member.id,
+          reason,
+        }),
+      });
+
+      // Send notification to member
+      await sendNotification(tx, {
+        userId: member.id,
+        title: "Fine Assessed",
+        message: `A fine of $${formattedAmount} was assessed to your account. Reason: ${reason}`,
+        type: "fine_assessed",
+        link: "/my-loans",
+      });
     });
   } catch (err) {
     console.error("Manual fine error:", err);
@@ -221,6 +257,6 @@ export async function createManualFineAction(
 
   return {
     success: true,
-    message: `Fine of $${(amountCents / 100).toFixed(2)} assessed to ${member.fullName}.`,
+    message: `Fine of $${formattedAmount} assessed to ${member.fullName}.`,
   };
 }
