@@ -2,8 +2,6 @@ import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-const connectionString = process.env.DATABASE_URL || "";
-
 // Singleton pattern for database client in serverless/Next.js environment
 declare global {
   var __db: PostgresJsDatabase<typeof schema> | undefined;

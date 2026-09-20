@@ -1,12 +1,12 @@
-// src/app/catalogue/error.tsx
+// src/app/audit-logs/error.tsx
 "use client";
 
 import React, { useEffect } from "react";
-import { Library, RefreshCw } from "lucide-react";
+import { ShieldAlert, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-export default function CatalogueError({
+export default function AuditLogsError({
   error,
   reset,
 }: {
@@ -14,7 +14,7 @@ export default function CatalogueError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Catalogue error boundary caught:", error);
+    console.error("Audit logs error boundary caught:", error);
   }, [error]);
 
   return (
@@ -22,14 +22,14 @@ export default function CatalogueError({
       <Card className="max-w-md w-full border-rose-200 dark:border-rose-950/40 bg-white dark:bg-zinc-900 shadow-sm text-center">
         <CardContent className="p-6 space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-rose-600 flex items-center justify-center mx-auto">
-            <Library className="w-6 h-6" />
+            <ShieldAlert className="w-6 h-6" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
-              Unable to Load Catalogue
+              Unable to Load Audit Logs
             </h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Could not retrieve the book catalogue collection. Please try again.
+              Could not retrieve audit trail entries. Please try refreshing.
             </p>
           </div>
           <Button onClick={() => reset()} className="gap-2 mx-auto">
