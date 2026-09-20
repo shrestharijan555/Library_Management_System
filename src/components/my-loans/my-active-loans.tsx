@@ -1,4 +1,5 @@
 // src/components/my-loans/my-active-loans.tsx
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";

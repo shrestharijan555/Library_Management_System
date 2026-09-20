@@ -1,4 +1,5 @@
 // src/components/circulation/loans-live-table.tsx
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useTransition } from "react";
