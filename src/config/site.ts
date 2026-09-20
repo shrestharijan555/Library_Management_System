@@ -88,6 +88,11 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     roles: ["admin", "librarian"],
   },
   {
+    title: "Audit Logs",
+    href: "/audit-logs",
+    roles: ["admin", "librarian"],
+  },
+  {
     title: "Settings",
     href: "/settings",
     roles: ["admin"],

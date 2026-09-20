@@ -7,12 +7,12 @@ import { users, loans, fines } from "@/db/schema";
 import { requireAuthUser } from "@/lib/auth/session";
 import { hasPermission, PERMISSIONS } from "@/config/roles";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  createMemberSchema,
+import { createMemberSchema,
   updateMemberSchema,
   updateMemberStatusSchema,
   deleteMemberSchema,
 } from "@/lib/members/validation";
+import { logAudit } from "@/lib/audit/logger";
 import type { UserRole, UserStatus } from "@/types";
 
 export interface MemberActionResult {
@@ -155,6 +155,20 @@ export async function createMemberAction(
       .returning();
 
     createdId = newUser.id;
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "member_created",
+      entityType: "member",
+      entityId: createdId,
+      details: {
+        fullName: data.fullName,
+        email: data.email,
+        memberCode: finalMemberCode,
+        role: data.role,
+        status: data.status,
+      },
+    });
   } catch (err) {
     console.error("Error creating member record:", err);
     return {
@@ -234,6 +248,19 @@ export async function updateMemberAction(
         updatedAt: new Date(),
       })
       .where(eq(users.id, memberId));
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "member_updated",
+      entityType: "member",
+      entityId: memberId,
+      details: {
+        fullName: data.fullName,
+        role: data.role,
+        department: data.department,
+        gradeClass: data.gradeClass,
+      },
+    });
   } catch (err) {
     console.error("Error updating member profile:", err);
     return { error: "Failed to update member profile." };
@@ -289,6 +316,17 @@ export async function updateMemberStatusAction(
         updatedAt: new Date(),
       })
       .where(eq(users.id, memberId));
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "member_status_changed",
+      entityType: "member",
+      entityId: memberId,
+      details: {
+        newStatus: status,
+        reason: reason ?? "Status updated by administrator",
+      },
+    });
   } catch (err) {
     console.error("Error updating member status:", err);
     return { error: "Failed to update account status." };
@@ -368,6 +406,18 @@ export async function deleteMemberAction(memberId: string): Promise<MemberAction
     });
 
     await db.delete(users).where(eq(users.id, memberId));
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "member_deleted",
+      entityType: "member",
+      entityId: memberId,
+      details: {
+        fullName: userToDelete?.fullName,
+        email: userToDelete?.email,
+        memberCode: userToDelete?.memberCode,
+      },
+    });
 
     // Optional: cleanup Supabase Auth user if linked
     if (userToDelete?.supabaseAuthId) {

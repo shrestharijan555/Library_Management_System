@@ -1,3 +1,4 @@
+// src/app/actions/auth.ts
 "use server";
 
 import { redirect } from "next/navigation";
@@ -7,6 +8,8 @@ import { db } from "@/db";
 import { users } from "@/db/schema/users";
 import { loginSchema } from "@/lib/auth/validation";
 import { DEMO_ACCOUNTS } from "@/config/demo-accounts";
+import { logAudit } from "@/lib/audit/logger";
+import { getAppUser } from "@/lib/auth/session";
 
 export interface AuthActionResult {
   error?: string;
@@ -121,11 +124,27 @@ export async function loginAction(
 
     // Account status enforcement: Reject suspended or inactive accounts
     if (appUser.status !== "active") {
+      await logAudit(db, {
+        userId: appUser.id,
+        action: "login_rejected_inactive",
+        entityType: "auth",
+        entityId: appUser.id,
+        details: { email: appUser.email, status: appUser.status },
+      });
       await supabase.auth.signOut();
       return {
         error: `Your account is currently ${appUser.status}. Access denied.`,
       };
     }
+
+    // Record successful login audit event
+    await logAudit(db, {
+      userId: appUser.id,
+      action: "user_login",
+      entityType: "auth",
+      entityId: appUser.id,
+      details: { email: appUser.email, role: appUser.role, memberCode: appUser.memberCode },
+    });
   } catch (err) {
     console.error("Error resolving application user during login:", err);
     await supabase.auth.signOut();
@@ -139,9 +158,20 @@ export async function loginAction(
 
 /**
  * Server Action for User Logout.
- * Invalidates the Supabase session and redirects to the login page.
+ * Invalidates the Supabase session, records audit event, and redirects to login.
  */
 export async function logoutAction() {
+  const session = await getAppUser();
+  if (session?.appUser) {
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "user_logout",
+      entityType: "auth",
+      entityId: session.appUser.id,
+      details: { email: session.appUser.email, role: session.appUser.role },
+    });
+  }
+
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");

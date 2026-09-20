@@ -16,6 +16,7 @@ import {
 import { requireAuthUser } from "@/lib/auth/session";
 import { hasPermission, PERMISSIONS } from "@/config/roles";
 import { bookFormSchema } from "@/lib/catalogue/validation";
+import { logAudit } from "@/lib/audit/logger";
 
 export interface CatalogueActionResult {
   success?: boolean;
@@ -209,6 +210,19 @@ export async function createBookAction(
 
       await db.insert(bookCopies).values(copyValues);
     }
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "book_created",
+      entityType: "book",
+      entityId: createdBookId,
+      details: {
+        title: data.title,
+        isbn: data.isbn,
+        initialCopies: initialCopiesCount,
+        callNumber: data.callNumber,
+      },
+    });
   } catch (err) {
     console.error("Error creating book:", err);
     return {
@@ -382,6 +396,18 @@ export async function updateBookAction(
         }))
       );
     }
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "book_updated",
+      entityType: "book",
+      entityId: bookId,
+      details: {
+        title: data.title,
+        isbn: data.isbn,
+        callNumber: data.callNumber,
+      },
+    });
   } catch (err) {
     console.error("Error updating book:", err);
     return {
@@ -418,7 +444,19 @@ export async function deleteBookAction(bookId: string): Promise<CatalogueActionR
     }
 
     // Delete the book (cascade foreign keys will remove book_authors and book_copies)
+    const bookToDelete = await db.query.books.findFirst({ where: eq(books.id, bookId) });
     await db.delete(books).where(eq(books.id, bookId));
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "book_deleted",
+      entityType: "book",
+      entityId: bookId,
+      details: {
+        title: bookToDelete?.title,
+        isbn: bookToDelete?.isbn,
+      },
+    });
   } catch (err) {
     console.error("Error deleting book:", err);
     return {

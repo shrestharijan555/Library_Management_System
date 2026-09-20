@@ -21,6 +21,7 @@ import {
   deleteCopySchema,
   barcodeLookupSchema,
 } from "@/lib/inventory/validation";
+import { logAudit } from "@/lib/audit/logger";
 import type { BookCopy, Book, Author, CopyStatus } from "@/types";
 
 export interface ActiveLoanSummary {
@@ -196,6 +197,20 @@ export async function addBookCopiesAction(
 
     // Sync book copy counters for atomic consistency
     await syncBookCopyCounters(bookId);
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "copy_created",
+      entityType: "copy",
+      entityId: bookId,
+      details: {
+        bookId,
+        bookTitle: book.title,
+        quantity,
+        shelfLocation,
+        status,
+      },
+    });
   } catch (err) {
     console.error("Error adding book copies:", err);
     return {
@@ -306,6 +321,18 @@ export async function updateBookCopyAction(
 
     // Recalculate counters
     await syncBookCopyCounters(bookId);
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "copy_updated",
+      entityType: "copy",
+      entityId: copyId,
+      details: {
+        barcode,
+        shelfLocation,
+        status: newStatus,
+      },
+    });
   } catch (err) {
     console.error("Error updating book copy:", err);
     return {
@@ -386,6 +413,18 @@ export async function updateCopyStatusAction(
       .where(eq(bookCopies.id, copyId));
 
     await syncBookCopyCounters(bookId);
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "copy_status_changed",
+      entityType: "copy",
+      entityId: copyId,
+      details: {
+        previousStatus: existingCopy.status,
+        newStatus,
+        conditionNotes,
+      },
+    });
   } catch (err) {
     console.error("Error updating copy status:", err);
     return {
@@ -464,6 +503,17 @@ export async function deleteBookCopyAction(
 
     // Recalculate counters
     await syncBookCopyCounters(bookId);
+
+    await logAudit(db, {
+      userId: session.appUser.id,
+      action: "copy_deleted",
+      entityType: "copy",
+      entityId: copyId,
+      details: {
+        barcode: existingCopy.barcode,
+        shelfLocation: existingCopy.shelfLocation,
+      },
+    });
   } catch (err) {
     console.error("Error deleting book copy:", err);
     return {

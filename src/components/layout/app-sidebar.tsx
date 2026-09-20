@@ -14,6 +14,7 @@ import {
   FileText,
   Settings,
   Shield,
+  ShieldAlert,
 } from "lucide-react";
 import { MAIN_NAV_ITEMS, siteConfig } from "@/config/site";
 import type { UserRole } from "@/config/roles";
@@ -33,6 +34,7 @@ const NAV_ICON_MAP: Record<string, React.ElementType> = {
   "/my-loans": BookMarked,
   "/fines": Receipt,
   "/reports": FileText,
+  "/audit-logs": ShieldAlert,
   "/settings": Settings,
 };
 
