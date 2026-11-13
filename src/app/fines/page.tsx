@@ -72,7 +72,7 @@ export default async function FinesPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-600/20">
+          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center shadow-xs dark:bg-zinc-100 dark:text-zinc-900">
             <DollarSign className="w-5 h-5" />
           </div>
           Fines & Dues Management

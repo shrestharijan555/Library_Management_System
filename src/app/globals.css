@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  * {
+    border-color: var(--border, theme(colors.zinc.200));
+  }
+  body {
+    background-color: var(--background, theme(colors.zinc.50));
+    color: var(--foreground, theme(colors.zinc.900));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}

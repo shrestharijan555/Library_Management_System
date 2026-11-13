@@ -4,12 +4,14 @@ import React, { useState, useTransition } from "react";
 import { Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { deleteMemberAction } from "@/app/actions/members";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface DeleteMemberDialogProps {
   memberId: string;
-  memberName: string;
-  memberCode: string;
-  isSelf: boolean;
+  memberName: string; // fullName of the member
+  memberCode?: string;
+  isSelf?: boolean;
+  variant?: "icon" | "button"; // default "icon"
 }
 
 export function DeleteMemberDialog({
@@ -17,12 +19,16 @@ export function DeleteMemberDialog({
   memberName,
   memberCode,
   isSelf,
+  variant = "icon",
 }: DeleteMemberDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
+  // Guard: never attempt delete if memberId is missing
   const handleDelete = () => {
+    if (!memberId) return;
     setErrorMessage(null);
     startTransition(async () => {
       const result = await deleteMemberAction(memberId);
@@ -30,26 +36,46 @@ export function DeleteMemberDialog({
         setErrorMessage(result.error);
       } else {
         setIsOpen(false);
+        router.refresh();
       }
     });
   };
 
+  // Render nothing if required data is missing (should not happen in normal flow)
+  if (!memberId || !memberName) {
+    return null;
+  }
+
   return (
     <>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={isSelf}
-        onClick={() => {
-          setErrorMessage(null);
-          setIsOpen(true);
-        }}
-        className="gap-1.5 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
-      >
-        <Trash2 className="size-3.5" />
-        <span>Delete Member</span>
-      </Button>
+      {variant === "icon" ? (
+        <button
+          type="button"
+          onClick={() => {
+            setErrorMessage(null);
+            setIsOpen(true);
+          }}
+          aria-label={`Delete ${memberName}`}
+          title="Delete Member"
+          className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-rose-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+        >
+          <Trash2 className="size-3" />
+        </button>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setErrorMessage(null);
+            setIsOpen(true);
+          }}
+          className="gap-1.5 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200"
+        >
+          <Trash2 className="size-3.5" />
+          <span>Delete Member</span>
+        </Button>
+      )}
 
       {isOpen && (
         <div
@@ -68,45 +94,34 @@ export function DeleteMemberDialog({
           {/* Dialog Modal */}
           <div className="relative w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150">
             <div className="flex items-start gap-4">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
                 <AlertTriangle className="size-5" />
               </div>
               <div className="space-y-1">
                 <h3 id="delete-member-dialog-title" className="text-base font-bold text-zinc-900">
-                  Delete Member Profile
+                  Delete Member
                 </h3>
                 <p className="text-xs text-zinc-500 leading-relaxed">
-                  Are you sure you want to permanently remove{" "}
-                  <strong className="text-zinc-900">&ldquo;{memberName}&rdquo;</strong> ({memberCode})?
+                  Are you sure you want to delete <strong className="text-zinc-900">{memberName}</strong>? This action cannot be undone and will remove the member's access while preserving historical records.
                 </p>
               </div>
             </div>
 
             {errorMessage && (
-              <div
-                role="alert"
-                className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700 leading-relaxed"
-              >
+              <div role="alert" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
                 {errorMessage}
               </div>
             )}
 
             <div className="mt-6 flex items-center justify-end gap-2.5">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isPending}
-                onClick={() => setIsOpen(false)}
-              >
+              <Button type="button" variant="outline" size="sm" disabled={isPending} onClick={() => setIsOpen(false)}>
                 Cancel
               </Button>
-
               <Button
                 type="button"
                 variant="destructive"
                 size="sm"
-                disabled={isPending || isSelf}
+                disabled={isPending}
                 onClick={handleDelete}
                 className="gap-1.5"
               >

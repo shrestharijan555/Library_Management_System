@@ -10,7 +10,7 @@ export default function ReportsLoading() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/40 text-indigo-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-400 flex items-center justify-center">
               <BarChart3 className="w-5 h-5 animate-spin" />
             </div>
             <div className="h-8 w-64 bg-zinc-200 dark:bg-zinc-800 rounded-lg" />

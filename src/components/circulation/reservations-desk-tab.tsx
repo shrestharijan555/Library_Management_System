@@ -159,7 +159,7 @@ export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTab
                           ✓
                         </span>
                       ) : (
-                        <span className="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold font-mono text-xs flex items-center justify-center mx-auto border border-indigo-200 dark:border-indigo-800">
+                        <span className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold font-mono text-xs flex items-center justify-center mx-auto border border-zinc-200 dark:border-zinc-700">
                           #{res.queuePosition}
                         </span>
                       )}
@@ -182,7 +182,7 @@ export function ReservationsDeskTab({ initialReservations }: ReservationsDeskTab
                         <div className="min-w-0">
                           <Link
                             href={`/catalogue/${res.bookId}`}
-                            className="font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 truncate block max-w-[200px] sm:max-w-xs"
+                            className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline truncate block max-w-[200px] sm:max-w-xs"
                           >
                             {res.bookTitle}
                           </Link>

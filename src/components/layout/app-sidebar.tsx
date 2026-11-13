@@ -7,13 +7,12 @@ import {
   BookOpen,
   LayoutDashboard,
   Library,
-  BookCopy,
+  ArrowRightLeft,
   Users,
   BookMarked,
   Receipt,
   FileText,
   Settings,
-  Shield,
   ShieldAlert,
 } from "lucide-react";
 import { MAIN_NAV_ITEMS, siteConfig } from "@/config/site";
@@ -29,7 +28,7 @@ interface AppSidebarProps {
 const NAV_ICON_MAP: Record<string, React.ElementType> = {
   "/dashboard": LayoutDashboard,
   "/catalogue": Library,
-  "/circulation": BookCopy,
+  "/circulation": ArrowRightLeft,
   "/members": Users,
   "/my-loans": BookMarked,
   "/fines": Receipt,
@@ -50,67 +49,69 @@ export function AppSidebar({ user, onNavigate }: AppSidebarProps) {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "admin":
-        return "destructive" as const;
-      case "librarian":
         return "default" as const;
+      case "librarian":
+        return "secondary" as const;
       case "staff":
-        return "info" as const;
+        return "outline" as const;
       default:
         return "secondary" as const;
     }
   };
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-zinc-200 bg-white text-zinc-900">
+    <aside className="flex h-full w-64 flex-col border-r border-zinc-200 bg-white text-zinc-900 transition-colors duration-150 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-100">
       {/* Brand Header */}
-      <div className="flex h-16 items-center justify-between border-b border-zinc-100 px-5">
+      <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-5 dark:border-zinc-800">
         <Link
           href="/dashboard"
-          className="flex items-center gap-3 font-semibold text-zinc-900 transition-opacity hover:opacity-80"
+          className="flex items-center gap-3 font-semibold text-zinc-900 transition-opacity hover:opacity-85 dark:text-zinc-50"
           onClick={onNavigate}
         >
-          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-900 text-zinc-50 shadow-sm">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-900 text-zinc-50 shadow-xs dark:bg-zinc-100 dark:text-zinc-900">
             <BookOpen className="size-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-bold leading-tight tracking-tight">
+            <span className="text-sm font-bold leading-tight tracking-tight text-zinc-900 dark:text-zinc-50">
               {siteConfig.shortName}
             </span>
-            <span className="text-[11px] font-medium text-zinc-400">
-              Library Console
+            <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+              Library Management
             </span>
           </div>
         </Link>
-        <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 font-mono">
-          v{siteConfig.version}
-        </Badge>
       </div>
 
       {/* Main Navigation */}
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-          Navigation Menu
+        <div className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+          Navigation
         </div>
         <nav className="space-y-1">
           {allowedNavItems.map((item) => {
             const Icon = NAV_ICON_MAP[item.href] || LayoutDashboard;
-            const isActive = pathname === item.href;
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
                 aria-current={isActive ? "page" : undefined}
-                className={`group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                   isActive
-                    ? "bg-zinc-900 text-zinc-50 shadow-sm"
-                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                    ? "bg-zinc-900 text-white shadow-xs dark:bg-zinc-100 dark:text-zinc-900"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <Icon
-                    className={`size-4 shrink-0 ${
-                      isActive ? "text-zinc-50" : "text-zinc-400 group-hover:text-zinc-700"
+                    className={`size-4 shrink-0 transition-colors ${
+                      isActive
+                        ? "text-white dark:text-zinc-900"
+                        : "text-zinc-400 group-hover:text-zinc-700 dark:text-zinc-500 dark:group-hover:text-zinc-300"
                     }`}
                   />
                   <span>{item.title}</span>
@@ -122,22 +123,23 @@ export function AppSidebar({ user, onNavigate }: AppSidebarProps) {
       </div>
 
       {/* User Context & Role Footer */}
-      <div className="border-t border-zinc-100 p-4">
-        <div className="rounded-lg border border-zinc-100 bg-zinc-50/80 p-3">
+      <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-3 transition-colors dark:border-zinc-800 dark:bg-zinc-900/60">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-medium text-zinc-400">Account Access</span>
+            <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+              Account Role
+            </span>
             <Badge
               variant={getRoleBadgeVariant(user.role)}
               className="px-2 py-0 text-[10px] font-semibold capitalize"
             >
-              <Shield className="mr-1 size-2.5 inline" />
               {user.role}
             </Badge>
           </div>
-          <p className="truncate text-xs font-semibold text-zinc-900">
+          <p className="truncate text-xs font-semibold text-zinc-900 dark:text-zinc-100">
             {user.fullName}
           </p>
-          <p className="truncate text-[11px] text-zinc-500">
+          <p className="truncate text-[11px] text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">
             ID: {user.memberCode}
           </p>
         </div>

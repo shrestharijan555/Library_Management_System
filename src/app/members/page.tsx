@@ -213,21 +213,17 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800 dark:bg-zinc-900">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 px-2.5 py-0.5 text-xs font-medium">
-              <Users className="size-3 text-zinc-900" />
-              Phase 8 Member Roster
-            </Badge>
             <Badge variant="secondary" className="text-xs">
               {totalItems} {totalItems === 1 ? "Member" : "Members"} Found
             </Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">
             Institutional Members Directory
           </h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Search, manage borrowing privileges, review history, and maintain user accounts.
           </p>
         </div>
@@ -237,57 +233,57 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
 
       {/* KPI Counters Strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-900">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
             <Users className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Total Accounts
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {totalMembersStat?.count ?? 0}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
             <GraduationCap className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Students
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {studentsStat?.count ?? 0}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-sky-100 text-sky-800">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
             <Briefcase className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Faculty & Staff
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {staffStat?.count ?? 0}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-red-100 text-red-800">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
             <AlertOctagon className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Suspended
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {suspendedStat?.count ?? 0}
             </div>
           </div>
@@ -295,7 +291,7 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
       </div>
 
       {/* Search & Filter Controls */}
-      <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-xs">
+      <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <MembersSearch defaultValue={query} />
         </div>
@@ -304,14 +300,14 @@ export default async function MembersPage({ searchParams }: MembersPageProps) {
 
       {/* Members Table or Empty State */}
       {enrichedMembers.length === 0 ? (
-        <div className="flex min-h-[350px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center shadow-xs">
-          <div className="flex size-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+        <div className="flex min-h-[350px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
             <UserX className="size-7" />
           </div>
-          <h3 className="mt-4 text-base font-bold text-zinc-900">
+          <h3 className="mt-4 text-base font-bold text-zinc-900 dark:text-zinc-100">
             No member accounts found
           </h3>
-          <p className="mt-1 max-w-sm text-xs text-zinc-500">
+          <p className="mt-1 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
             {query || role !== "all" || status !== "all" || standing !== "all"
               ? "No member profiles matched your active filters. Try adjusting your query or resetting filters."
               : "No institutional member records are registered in the database."}

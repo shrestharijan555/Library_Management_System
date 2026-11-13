@@ -47,18 +47,18 @@ export function MobileNav({ isOpen, onClose, user }: MobileNavProps) {
     >
       {/* Backdrop Overlay */}
       <div
-        className="fixed inset-0 bg-zinc-950/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-zinc-950/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Slide-over Drawer Panel */}
-      <div className="fixed inset-y-0 left-0 flex w-72 max-w-full flex-col bg-white shadow-xl animate-in slide-in-from-left duration-200">
+      <div className="fixed inset-y-0 left-0 flex w-72 max-w-full flex-col bg-white shadow-xl animate-in slide-in-from-left duration-200 dark:bg-zinc-950 dark:border-r dark:border-zinc-800">
         {/* Close Button Header */}
-        <div className="flex h-14 items-center justify-between border-b border-zinc-100 px-4">
-          <div className="flex items-center gap-2 font-semibold text-zinc-900">
-            <div className="flex size-7 items-center justify-center rounded-md bg-zinc-900 text-zinc-50">
-              <BookOpen className="size-4" />
+        <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-4 dark:border-zinc-800">
+          <div className="flex items-center gap-2.5 font-semibold text-zinc-900 dark:text-zinc-50">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900">
+              <BookOpen className="size-4.5" />
             </div>
             <span className="text-sm font-bold">{siteConfig.shortName}</span>
           </div>
@@ -67,7 +67,7 @@ export function MobileNav({ isOpen, onClose, user }: MobileNavProps) {
             type="button"
             onClick={onClose}
             aria-label="Close navigation menu"
-            className="flex size-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-950 cursor-pointer"
+            className="flex size-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-950 cursor-pointer dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           >
             <X className="size-5" />
           </button>

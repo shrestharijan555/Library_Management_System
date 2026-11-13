@@ -119,7 +119,7 @@ export function ReturnDeskTab() {
       <Card className="border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <RotateCcw className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <RotateCcw className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
             Fast Check-In / Return Desk
           </CardTitle>
           <CardDescription>

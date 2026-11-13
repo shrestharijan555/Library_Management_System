@@ -218,28 +218,24 @@ export default async function CataloguePage({
   return (
     <div className="space-y-6">
       {/* Top Banner Header */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800 dark:bg-zinc-900">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 px-2.5 py-0.5 text-xs font-medium">
-              <Library className="size-3 text-zinc-900" />
-              Phase 6 Catalogue
-            </Badge>
             <Badge variant="secondary" className="text-xs">
               {totalItems} {totalItems === 1 ? "Title" : "Titles"} Found
             </Badge>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-50">
             Book Catalogue & Holdings
           </h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Search, filter, and manage institutional literature holdings and physical inventory.
           </p>
         </div>
 
         {canCreateBook && (
           <Link href="/catalogue/new">
-            <Button className="gap-2 shadow-sm">
+            <Button className="gap-2 shadow-xs">
               <Plus className="size-4" />
               <span>Add New Book</span>
             </Button>
@@ -249,57 +245,57 @@ export default async function CataloguePage({
 
       {/* Summary KPI Counters Strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-sm">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-900">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
             <BookOpen className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Total Titles
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {statsTotalBooks?.count ?? 0}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-sm">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
             <BookCheck className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Available Titles
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {statsAvailableBooks?.count ?? 0}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-sm">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-sky-100 text-sky-800">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
             <Layers className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Physical Copies
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {statsTotalCopies?.sum ?? 0}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-sm">
-          <div className="flex size-9 items-center justify-center rounded-lg bg-amber-100 text-amber-800">
+        <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-9 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
             <FolderOpen className="size-4.5" />
           </div>
           <div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Categories
             </span>
-            <div className="text-lg font-bold text-zinc-900">
+            <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
               {allCategories.length}
             </div>
           </div>
@@ -307,7 +303,7 @@ export default async function CataloguePage({
       </div>
 
       {/* Search & Filter Controls */}
-      <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+      <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <CatalogueSearch defaultValue={query} />
         </div>
@@ -316,14 +312,14 @@ export default async function CataloguePage({
 
       {/* Catalogue Content: Grid / Table View or Empty State */}
       {enrichedBooks.length === 0 ? (
-        <div className="flex min-h-[350px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center shadow-sm">
-          <div className="flex size-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+        <div className="flex min-h-[350px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex size-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
             <BookOpen className="size-7" />
           </div>
-          <h3 className="mt-4 text-base font-bold text-zinc-900">
+          <h3 className="mt-4 text-base font-bold text-zinc-900 dark:text-zinc-100">
             No books found
           </h3>
-          <p className="mt-1 max-w-sm text-xs text-zinc-500">
+          <p className="mt-1 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
             {query || categorySlug || status !== "all"
               ? "No catalogue items matched your current search filters. Try adjusting your keywords or clearing filters."
               : "The library catalogue is currently empty. Add your first book to begin building the collection."}
@@ -358,13 +354,13 @@ export default async function CataloguePage({
 
       {/* Pagination Bar */}
       {totalPages > 1 && (
-        <div className="flex flex-col items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm sm:flex-row">
-          <span className="text-xs text-zinc-500">
-            Showing <strong className="text-zinc-900">{offset + 1}</strong> to{" "}
-            <strong className="text-zinc-900">
+        <div className="flex flex-col items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-xs sm:flex-row dark:border-zinc-800 dark:bg-zinc-900">
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            Showing <strong className="text-zinc-900 dark:text-zinc-100">{offset + 1}</strong> to{" "}
+            <strong className="text-zinc-900 dark:text-zinc-100">
               {Math.min(offset + limit, totalItems)}
             </strong>{" "}
-            of <strong className="text-zinc-900">{totalItems}</strong> titles
+            of <strong className="text-zinc-900 dark:text-zinc-100">{totalItems}</strong> titles
           </span>
 
           <div className="flex items-center gap-1.5">

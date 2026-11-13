@@ -50,15 +50,15 @@ export function QuickRenewDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl overflow-hidden">
         <div className="p-6 space-y-4">
-          <div className="flex items-center gap-3 text-indigo-600 dark:text-indigo-400">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center">
-              <RefreshCw className="w-5 h-5" />
+          <div className="flex items-center gap-3 text-zinc-900 dark:text-zinc-100">
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+              <RefreshCw className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
             </div>
             <div>
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
                 Renew Loan
               </h3>
-              <p className="text-xs text-zinc-500">Extend due date based on user role policy</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Extend due date based on user role policy</p>
             </div>
           </div>
 
@@ -96,7 +96,7 @@ export function QuickRenewDialog({
           <Button
             onClick={handleRenew}
             disabled={isPending}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             {isPending ? (
               <>

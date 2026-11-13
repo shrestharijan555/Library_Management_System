@@ -16,10 +16,10 @@ export function BookTable({ books, currentUser }: BookTableProps) {
   const canDelete = hasPermission(currentUser.role as UserRole, PERMISSIONS.DELETE_BOOK);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-zinc-200 bg-zinc-50/80 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+          <thead className="border-b border-zinc-200 bg-zinc-50/80 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
             <tr>
               <th className="py-3.5 pl-4 pr-3 sm:pl-6">Title & Edition</th>
               <th className="px-3 py-3.5">Author(s)</th>
@@ -30,7 +30,7 @@ export function BookTable({ books, currentUser }: BookTableProps) {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-zinc-100 text-zinc-700">
+          <tbody className="divide-y divide-zinc-100 text-zinc-700 dark:divide-zinc-800 dark:text-zinc-300">
             {books.map((book) => {
               const authorNames =
                 book.authors && book.authors.length > 0
@@ -43,12 +43,12 @@ export function BookTable({ books, currentUser }: BookTableProps) {
               return (
                 <tr
                   key={book.id}
-                  className="transition-colors hover:bg-zinc-50/70"
+                  className="transition-colors hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50"
                 >
                   {/* Title & Cover preview */}
                   <td className="py-3.5 pl-4 pr-3 sm:pl-6">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                         {book.coverImageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -63,18 +63,18 @@ export function BookTable({ books, currentUser }: BookTableProps) {
                       <div className="max-w-[220px] sm:max-w-xs">
                         <Link
                           href={`/catalogue/${book.id}`}
-                          className="truncate font-bold text-zinc-900 hover:underline block"
+                          className="truncate font-bold text-zinc-900 hover:underline block dark:text-zinc-100"
                           title={book.title}
                         >
                           {book.title}
                         </Link>
                         {book.subtitle && (
-                          <p className="truncate text-[11px] text-zinc-400">
+                          <p className="truncate text-[11px] text-zinc-400 dark:text-zinc-500">
                             {book.subtitle}
                           </p>
                         )}
                         {book.edition && (
-                          <span className="text-[10px] text-zinc-400">
+                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
                             Ed: {book.edition}
                           </span>
                         )}
@@ -84,7 +84,7 @@ export function BookTable({ books, currentUser }: BookTableProps) {
 
                   {/* Authors */}
                   <td className="px-3 py-3.5">
-                    <span className="line-clamp-1 max-w-[150px] font-medium text-zinc-800">
+                    <span className="line-clamp-1 max-w-[150px] font-medium text-zinc-800 dark:text-zinc-200">
                       {authorNames}
                     </span>
                   </td>
@@ -96,15 +96,15 @@ export function BookTable({ books, currentUser }: BookTableProps) {
                         {book.category.name}
                       </Badge>
                     ) : (
-                      <span className="text-zinc-400">—</span>
+                      <span className="text-zinc-400 dark:text-zinc-500">—</span>
                     )}
                   </td>
 
                   {/* ISBN & Call number */}
-                  <td className="px-3 py-3.5 font-mono text-[11px] text-zinc-600">
+                  <td className="px-3 py-3.5 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
                     <div>{book.isbn}</div>
                     {book.callNumber && (
-                      <div className="text-[10px] text-zinc-400 font-sans">
+                      <div className="text-[10px] text-zinc-400 font-sans dark:text-zinc-500">
                         Call: {book.callNumber}
                       </div>
                     )}
@@ -113,7 +113,7 @@ export function BookTable({ books, currentUser }: BookTableProps) {
                   {/* Availability */}
                   <td className="px-3 py-3.5 text-center">
                     {book.totalCopies === 0 ? (
-                      <Badge variant="outline" className="text-[10px] text-zinc-400">
+                      <Badge variant="outline" className="text-[10px] text-zinc-400 dark:text-zinc-500">
                         0 Copies
                       </Badge>
                     ) : !isAvailable ? (
@@ -136,7 +136,7 @@ export function BookTable({ books, currentUser }: BookTableProps) {
                     <div className="flex items-center justify-end gap-1.5">
                       <Link
                         href={`/catalogue/${book.id}`}
-                        className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                        className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
                         title="View Details"
                       >
                         <ExternalLink className="size-3" />
@@ -145,7 +145,7 @@ export function BookTable({ books, currentUser }: BookTableProps) {
                       {canEdit && (
                         <Link
                           href={`/catalogue/${book.id}/edit`}
-                          className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                          className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
                           title="Edit Title"
                         >
                           <Edit2 className="size-3" />

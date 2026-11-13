@@ -8,18 +8,19 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-zinc-900 text-zinc-50 shadow hover:bg-zinc-800",
+          "border-transparent bg-zinc-900 text-zinc-50 shadow-xs hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200",
         secondary:
-          "border-transparent bg-zinc-100 text-zinc-900 hover:bg-zinc-200",
+          "border-transparent bg-zinc-100 text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
         destructive:
-          "border-transparent bg-red-100 text-red-700 border-red-200",
-        outline: "text-zinc-950 border-zinc-300",
+          "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300",
+        outline:
+          "text-zinc-900 border-zinc-200 dark:text-zinc-100 dark:border-zinc-800",
         success:
-          "border-emerald-200 bg-emerald-100 text-emerald-800",
+          "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300",
         warning:
-          "border-amber-200 bg-amber-100 text-amber-800",
+          "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300",
         info:
-          "border-sky-200 bg-sky-100 text-sky-800",
+          "border-zinc-200 bg-zinc-100 text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
       },
     },
     defaultVariants: {

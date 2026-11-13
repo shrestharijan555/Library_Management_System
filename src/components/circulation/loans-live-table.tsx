@@ -219,7 +219,7 @@ export function LoansLiveTable({ initialLoans }: LoansLiveTableProps) {
                         <div className="min-w-0">
                           <Link
                             href={`/catalogue/${loan.bookId}`}
-                            className="font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 group truncate max-w-[200px] sm:max-w-xs"
+                            className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline flex items-center gap-1 group truncate max-w-[200px] sm:max-w-xs"
                           >
                             <span className="truncate">{loan.bookTitle}</span>
                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 shrink-0 transition-opacity" />
@@ -295,10 +295,10 @@ export function LoansLiveTable({ initialLoans }: LoansLiveTableProps) {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs px-2 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 dark:hover:bg-indigo-950/30"
+                            className="h-7 text-xs px-2 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                             onClick={() => setRenewTarget(loan)}
                           >
-                            <RefreshCw className="w-3 h-3 mr-1 text-indigo-600" />
+                            <RefreshCw className="w-3 h-3 mr-1 text-zinc-700 dark:text-zinc-300" />
                             Renew
                           </Button>
 

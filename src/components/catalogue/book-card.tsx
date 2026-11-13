@@ -61,109 +61,115 @@ export function BookCard({ book, currentUser }: BookCardProps) {
   };
 
   return (
-    <Card className="group flex flex-col overflow-hidden border-zinc-200 bg-white transition-all hover:border-zinc-300 hover:shadow-md">
-      {/* Book Header / Spine Banner */}
-      <div className="relative flex h-36 w-full items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-900 to-zinc-950 p-4 text-center text-zinc-50">
-        {book.coverImageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={book.coverImageUrl}
-            alt={book.title}
-            className="h-full w-full object-cover opacity-90 transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center space-y-1.5 px-3">
-            <div className="flex size-10 items-center justify-center rounded-lg bg-zinc-800/80 text-zinc-200 shadow-inner">
-              <BookOpen className="size-5" />
+    <Card className="group relative flex h-full flex-col overflow-hidden border-zinc-200 bg-white transition-all hover:border-zinc-300 hover:shadow-xs dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
+      <Link
+        href={`/catalogue/${book.id}`}
+        aria-label={`View details for ${book.title}`}
+        className="absolute inset-0 z-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+      />
+
+      <div className="pointer-events-none relative z-10 flex flex-1 flex-col">
+        <div className="relative flex h-36 w-full items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-900 to-zinc-950 p-4 text-center text-zinc-50">
+          {book.coverImageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={book.coverImageUrl}
+              alt=""
+              className="h-full w-full object-cover opacity-90 transition-transform duration-300 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center space-y-1.5 px-3">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-zinc-800/80 text-zinc-200 shadow-inner">
+                <BookOpen className="size-5" />
+              </div>
+              <span className="line-clamp-2 text-xs font-semibold text-zinc-200">
+                {book.title}
+              </span>
             </div>
-            <span className="line-clamp-2 text-xs font-semibold text-zinc-200">
-              {book.title}
-            </span>
-          </div>
-        )}
-
-        {/* Floating Top Badges */}
-        <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5">
-          {book.category && (
-            <Badge
-              variant="secondary"
-              className="bg-black/60 text-zinc-100 backdrop-blur-xs text-[10px] font-medium border-0"
-            >
-              {book.category.name}
-            </Badge>
           )}
+
+          <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5">
+            {book.category && (
+              <Badge
+                variant="secondary"
+                className="border-0 bg-black/60 text-[10px] font-medium text-zinc-100 backdrop-blur-xs"
+              >
+                {book.category.name}
+              </Badge>
+            )}
+          </div>
+
+          <div className="absolute right-2.5 top-2.5">{getStatusBadge()}</div>
         </div>
 
-        <div className="absolute right-2.5 top-2.5">
-          {getStatusBadge()}
-        </div>
-      </div>
-
-      {/* Book Metadata Content */}
-      <CardHeader className="p-4 pb-2">
-        <Link
-          href={`/catalogue/${book.id}`}
-          className="line-clamp-1 text-sm font-bold text-zinc-900 transition-colors hover:text-zinc-600"
-          title={book.title}
-        >
-          {book.title}
-        </Link>
-        {book.subtitle && (
-          <p className="line-clamp-1 text-xs text-zinc-500" title={book.subtitle}>
-            {book.subtitle}
+        <CardHeader className="p-4 pb-2">
+          <h2
+            className="line-clamp-1 text-sm font-bold text-zinc-900 dark:text-zinc-100"
+            title={book.title}
+          >
+            {book.title}
+          </h2>
+          {book.subtitle && (
+            <p
+              className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400"
+              title={book.subtitle}
+            >
+              {book.subtitle}
+            </p>
+          )}
+          <p className="line-clamp-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            by <span className="text-zinc-900 dark:text-zinc-200">{authorNames}</span>
           </p>
-        )}
-        <p className="line-clamp-1 text-xs font-medium text-zinc-600">
-          by <span className="text-zinc-900">{authorNames}</span>
-        </p>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent className="flex-1 px-4 py-2 text-xs text-zinc-500">
-        <div className="grid grid-cols-2 gap-2 border-t border-zinc-100 pt-2.5 text-[11px]">
-          <div className="flex items-center gap-1.5 truncate">
-            <Bookmark className="size-3 shrink-0 text-zinc-400" />
-            <span className="font-mono text-zinc-700">{book.isbn}</span>
+        <CardContent className="flex-1 px-4 py-2 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="grid grid-cols-2 gap-2 border-t border-zinc-100 pt-2.5 text-[11px] dark:border-zinc-800">
+            <div className="flex items-center gap-1.5 truncate">
+              <Bookmark className="size-3 shrink-0 text-zinc-400 dark:text-zinc-500" />
+              <span className="font-mono text-zinc-700 dark:text-zinc-300">{book.isbn}</span>
+            </div>
+            {book.publishYear && (
+              <div className="flex items-center justify-end gap-1.5">
+                <Calendar className="size-3 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                <span>{book.publishYear}</span>
+              </div>
+            )}
+            {book.callNumber && (
+              <div className="col-span-2 flex items-center gap-1.5 truncate">
+                <Layers className="size-3 shrink-0 text-zinc-400 dark:text-zinc-500" />
+                <span className="text-zinc-600 dark:text-zinc-400">
+                  Call #: {book.callNumber}
+                </span>
+              </div>
+            )}
           </div>
-          {book.publishYear && (
-            <div className="flex items-center gap-1.5 justify-end">
-              <Calendar className="size-3 shrink-0 text-zinc-400" />
-              <span>{book.publishYear}</span>
-            </div>
-          )}
-          {book.callNumber && (
-            <div className="flex items-center gap-1.5 col-span-2 truncate">
-              <Layers className="size-3 shrink-0 text-zinc-400" />
-              <span className="text-zinc-600">Call #: {book.callNumber}</span>
-            </div>
-          )}
-        </div>
-      </CardContent>
+        </CardContent>
 
-      {/* Card Action Footer */}
-      <CardFooter className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/50 p-3">
-        <Link
-          href={`/catalogue/${book.id}`}
-          className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-900 transition-colors hover:text-zinc-600"
-        >
-          <span>Details</span>
-          <ExternalLink className="size-3" />
-        </Link>
+        <CardFooter className="pointer-events-auto flex items-center justify-between border-t border-zinc-100 bg-zinc-50/50 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+          <Link
+            href={`/catalogue/${book.id}`}
+            className="relative z-10 inline-flex items-center gap-1 text-xs font-semibold text-zinc-900 transition-colors hover:text-zinc-600 dark:text-zinc-100 dark:hover:text-zinc-300"
+          >
+            <span>Details</span>
+            <ExternalLink className="size-3" />
+          </Link>
 
-        <div className="flex items-center gap-1.5">
-          {canEdit && (
-            <Link
-              href={`/catalogue/${book.id}/edit`}
-              className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
-              title="Edit Title"
-            >
-              <Edit2 className="size-3" />
-            </Link>
-          )}
-          {canDelete && (
-            <DeleteBookDialog bookId={book.id} bookTitle={book.title} />
-          )}
-        </div>
-      </CardFooter>
+          <div className="relative z-10 flex items-center gap-1.5">
+            {canEdit && (
+              <Link
+                href={`/catalogue/${book.id}/edit`}
+                className="flex size-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                title="Edit Title"
+              >
+                <Edit2 className="size-3" />
+              </Link>
+            )}
+            {canDelete && (
+              <DeleteBookDialog bookId={book.id} bookTitle={book.title} />
+            )}
+          </div>
+        </CardFooter>
+      </div>
     </Card>
   );
 }

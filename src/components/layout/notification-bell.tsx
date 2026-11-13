@@ -150,7 +150,7 @@ export function NotificationBell() {
       case "loan_returned":
       case "loan_renewed":
       default:
-        return <BookOpen className="size-4 text-indigo-600 dark:text-indigo-400" />;
+        return <BookOpen className="size-4 text-zinc-700 dark:text-zinc-300" />;
     }
   };
 
@@ -163,11 +163,11 @@ export function NotificationBell() {
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={`Notifications (${unreadCount} unread)`}
-        className="relative flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-950 cursor-pointer transition-colors"
+        className="relative flex size-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-950 cursor-pointer transition-colors dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
       >
-        <Bell className="size-4.5" />
+        <Bell className="size-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold text-white shadow-xs animate-in zoom-in-50">
+          <span className="absolute -top-1 -right-1 flex size-4.5 items-center justify-center rounded-full bg-zinc-900 text-[10px] font-bold text-white shadow-xs animate-in zoom-in-50 dark:bg-zinc-100 dark:text-zinc-900">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -176,14 +176,14 @@ export function NotificationBell() {
       {/* Popover Dropdown */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right rounded-xl border border-zinc-200 bg-white shadow-xl ring-1 ring-black/5 z-50 animate-in fade-in-50 zoom-in-95 duration-100 overflow-hidden"
+          className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right rounded-xl border border-zinc-200 bg-white shadow-xl ring-1 ring-black/5 z-50 animate-in fade-in-50 zoom-in-95 duration-100 overflow-hidden dark:border-zinc-800 dark:bg-zinc-900 dark:ring-white/10"
           role="region"
           aria-label="Notifications panel"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3 bg-zinc-50/70">
+          <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3 bg-zinc-50/70 dark:border-zinc-800 dark:bg-zinc-900/80">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-zinc-900">Notifications</h3>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Notifications</h3>
               {unreadCount > 0 && (
                 <Badge variant="default" className="text-[10px] px-1.5 py-0">
                   {unreadCount} new
@@ -197,7 +197,7 @@ export function NotificationBell() {
                 size="sm"
                 onClick={handleMarkAllRead}
                 disabled={loading}
-                className="h-7 text-xs text-zinc-500 hover:text-zinc-900 px-2 flex items-center gap-1"
+                className="h-7 text-xs text-zinc-500 hover:text-zinc-900 px-2 flex items-center gap-1 dark:text-zinc-400 dark:hover:text-zinc-100"
               >
                 {loading ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -210,12 +210,12 @@ export function NotificationBell() {
           </div>
 
           {/* List Content */}
-          <div className="max-h-[380px] overflow-y-auto divide-y divide-zinc-100">
+          <div className="max-h-[380px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
             {items.length === 0 ? (
-              <div className="p-8 text-center text-zinc-400">
+              <div className="p-8 text-center text-zinc-400 dark:text-zinc-500">
                 <Bell className="size-8 mx-auto mb-2 opacity-40" />
                 <p className="text-xs font-medium">No notifications yet</p>
-                <p className="text-[11px] text-zinc-400 mt-0.5">
+                <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
                   You will receive alerts here for loan due dates, hold availability, and fine notices.
                 </p>
               </div>
@@ -225,17 +225,17 @@ export function NotificationBell() {
                   key={item.id}
                   className={`p-3.5 transition-colors flex gap-3 ${
                     item.isRead
-                      ? "bg-white hover:bg-zinc-50/70 text-zinc-600"
-                      : "bg-indigo-50/40 hover:bg-indigo-50/70 text-zinc-900 font-medium"
+                      ? "bg-white hover:bg-zinc-50/70 text-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800/40 dark:text-zinc-400"
+                      : "bg-zinc-100/70 hover:bg-zinc-100 text-zinc-900 font-medium dark:bg-zinc-800/60 dark:hover:bg-zinc-800 dark:text-zinc-100"
                   }`}
                 >
-                  <div className="mt-0.5 shrink-0 rounded-lg p-1.5 bg-zinc-100/80 dark:bg-zinc-800/80">
+                  <div className="mt-0.5 shrink-0 rounded-lg p-1.5 bg-zinc-100 dark:bg-zinc-800">
                     {getNotificationIcon(item.type)}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-1">
-                      <h4 className="text-xs font-semibold text-zinc-900 truncate">
+                      <h4 className="text-xs font-semibold text-zinc-900 truncate dark:text-zinc-100">
                         {item.title}
                       </h4>
                       {!item.isRead && (
@@ -243,18 +243,18 @@ export function NotificationBell() {
                           type="button"
                           onClick={() => handleMarkRead(item.id)}
                           title="Mark as read"
-                          className="text-zinc-400 hover:text-indigo-600 p-0.5 shrink-0"
+                          className="text-zinc-400 hover:text-zinc-900 p-0.5 shrink-0 dark:hover:text-zinc-100"
                         >
                           <Check className="size-3" />
                         </button>
                       )}
                     </div>
 
-                    <p className="text-xs text-zinc-600 line-clamp-2 mt-0.5">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2 mt-0.5">
                       {item.message}
                     </p>
 
-                    <div className="flex items-center justify-between mt-2 pt-1 border-t border-zinc-100/80 text-[11px] text-zinc-400">
+                    <div className="flex items-center justify-between mt-2 pt-1 border-t border-zinc-100/80 text-[11px] text-zinc-400 dark:border-zinc-800 dark:text-zinc-500">
                       <span className="flex items-center gap-1">
                         <Clock className="size-3" />
                         {formatNotificationTime(item.createdAt)}
@@ -267,7 +267,7 @@ export function NotificationBell() {
                             if (!item.isRead) handleMarkRead(item.id);
                             setIsOpen(false);
                           }}
-                          className="text-indigo-600 font-medium hover:underline flex items-center gap-0.5"
+                          className="text-zinc-900 dark:text-zinc-100 font-medium hover:underline flex items-center gap-0.5"
                         >
                           View details
                           <ExternalLink className="size-2.5" />

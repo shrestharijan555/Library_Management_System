@@ -36,6 +36,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { DeleteBookDialog } from "@/components/catalogue/delete-book-dialog";
+import { ReserveBookDialog } from "@/components/catalogue/reserve-book-dialog";
 import { AddCopyDialog } from "@/components/inventory/add-copy-dialog";
 import { EditCopyDialog } from "@/components/inventory/edit-copy-dialog";
 import { DeleteCopyDialog } from "@/components/inventory/delete-copy-dialog";
@@ -147,6 +148,13 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
+          <ReserveBookDialog
+            bookId={book.id}
+            bookTitle={book.title}
+            userMemberCode={appUser.memberCode}
+            isAvailable={isAvailable}
+          />
+
           {(canScanBarcode || canManageInventory) && <BarcodeQuickLookup />}
 
           {canEdit && (
@@ -335,8 +343,8 @@ export default async function BookDetailsPage({ params }: BookDetailsPageProps) 
         </div>
       </div>
 
-      {/* Physical Copies Inventory Section (Phase 7) */}
-      <Card className="border-zinc-200 shadow-sm">
+      {/* Physical Copies Inventory Section */}
+      <Card className="border-zinc-200 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <CardHeader className="border-b border-zinc-100 pb-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>

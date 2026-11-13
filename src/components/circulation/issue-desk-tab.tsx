@@ -181,7 +181,7 @@ export function IssueDeskTab() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+                <span className="w-6 h-6 rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center text-xs font-bold">
                   1
                 </span>
                 Scan / Enter Member Card
@@ -254,7 +254,7 @@ export function IssueDeskTab() {
                         className={`h-full ${
                           memberData.activeLoanCount >= memberData.maxActiveLoans
                             ? "bg-rose-500"
-                            : "bg-indigo-600"
+                            : "bg-zinc-900 dark:bg-zinc-100"
                         }`}
                         style={{
                           width: `${Math.min(
@@ -289,7 +289,7 @@ export function IssueDeskTab() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+                <span className="w-6 h-6 rounded-full bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center text-xs font-bold">
                   2
                 </span>
                 Scan / Enter Book Barcode
@@ -378,11 +378,11 @@ export function IssueDeskTab() {
       </div>
 
       {/* Step 3: Checkout Action Bar */}
-      <Card className="border border-indigo-200 dark:border-indigo-900/50 bg-gradient-to-r from-indigo-50/50 via-white to-purple-50/50 dark:from-indigo-950/20 dark:via-zinc-900 dark:to-purple-950/20 shadow-sm">
+      <Card className="border border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900 shadow-xs">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
@@ -408,7 +408,7 @@ export function IssueDeskTab() {
             <Button
               onClick={handleIssueLoan}
               disabled={!isEligibleToIssue || isSubmitting}
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 shadow-md shadow-indigo-500/20"
+              className="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 text-white font-medium px-6 shadow-xs dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               {isSubmitting ? (
                 <>

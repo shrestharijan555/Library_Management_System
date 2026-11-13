@@ -22,7 +22,7 @@ export function AppShell({
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-900">
+    <div className="flex min-h-screen w-full bg-zinc-50 text-zinc-900 transition-colors duration-150 dark:bg-zinc-950 dark:text-zinc-100">
       {/* Desktop Persistent Sidebar */}
       <div className="hidden shrink-0 lg:block lg:w-64">
         <AppSidebar user={user} />
@@ -47,7 +47,7 @@ export function AppShell({
 
         {/* Dynamic Page Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-6xl">{children}</div>
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
     </div>

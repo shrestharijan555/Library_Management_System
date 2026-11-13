@@ -50,7 +50,7 @@ export function MyActiveLoans({ loans: initialLoans }: MyActiveLoansProps) {
 
       {loans.length === 0 ? (
         <Card className="border border-zinc-200 dark:border-zinc-800 p-8 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 flex items-center justify-center mx-auto mb-3">
             <BookOpen className="w-6 h-6" />
           </div>
           <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">No Active Loans</h3>
@@ -59,7 +59,7 @@ export function MyActiveLoans({ loans: initialLoans }: MyActiveLoansProps) {
           </p>
           <Link
             href="/catalogue"
-            className="inline-flex items-center justify-center mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md px-3 h-8 shadow-xs transition-colors"
+            className="inline-flex items-center justify-center mt-4 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium rounded-lg px-4 h-9 shadow-xs transition-colors dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             Explore Book Catalogue
           </Link>
@@ -95,7 +95,7 @@ export function MyActiveLoans({ loans: initialLoans }: MyActiveLoansProps) {
                       <div className="flex items-start justify-between gap-2">
                         <Link
                           href={`/catalogue/${loan.bookId}`}
-                          className="font-bold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 transition-colors text-sm line-clamp-2"
+                          className="font-bold text-zinc-900 dark:text-zinc-100 hover:underline transition-colors text-sm line-clamp-2"
                         >
                           {loan.bookTitle}
                         </Link>
@@ -150,7 +150,7 @@ export function MyActiveLoans({ loans: initialLoans }: MyActiveLoansProps) {
                         variant="outline"
                         disabled={!canRenew}
                         onClick={() => setRenewTarget(loan)}
-                        className="h-7 text-xs px-2.5 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 dark:hover:bg-indigo-950/40"
+                        className="h-7 text-xs px-2.5 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                       >
                         <RefreshCw className="w-3 h-3 mr-1.5" />
                         Renew

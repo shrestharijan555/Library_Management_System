@@ -82,7 +82,7 @@ export function MyHistory({ history }: MyHistoryProps) {
                         <div>
                           <Link
                             href={`/catalogue/${item.bookId}`}
-                            className="font-medium text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 truncate max-w-xs block"
+                            className="font-medium text-zinc-900 dark:text-zinc-100 hover:underline truncate max-w-xs block"
                           >
                             {item.bookTitle}
                           </Link>

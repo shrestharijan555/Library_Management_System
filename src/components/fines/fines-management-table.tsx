@@ -132,7 +132,7 @@ export function FinesManagementTable({
           {canCollect && (
             <Button
               onClick={() => setIsCreateOpen(true)}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
+              className="w-full bg-zinc-900 hover:bg-zinc-800 text-white font-medium dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               <PlusCircle className="w-4 h-4 mr-2" />
               Assess Manual Fine

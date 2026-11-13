@@ -81,7 +81,7 @@ export function MyReservations({ reservations: initial }: MyReservationsProps) {
 
       {list.length === 0 ? (
         <Card className="border border-zinc-200 dark:border-zinc-800 p-8 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 flex items-center justify-center mx-auto mb-3">
             <ListOrdered className="w-6 h-6" />
           </div>
           <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">No Active Holds</h3>
@@ -118,7 +118,7 @@ export function MyReservations({ reservations: initial }: MyReservationsProps) {
                     <div className="flex items-start justify-between gap-2">
                       <Link
                         href={`/catalogue/${res.bookId}`}
-                        className="font-bold text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 text-sm line-clamp-1"
+                        className="font-bold text-zinc-900 dark:text-zinc-100 hover:underline text-sm line-clamp-1"
                       >
                         {res.bookTitle}
                       </Link>
@@ -149,7 +149,7 @@ export function MyReservations({ reservations: initial }: MyReservationsProps) {
                   ) : (
                     <div className="flex items-center justify-between text-xs pt-2">
                       <span className="text-zinc-500">Waitlist Position:</span>
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+                      <span className="font-bold text-zinc-900 dark:text-zinc-100 font-mono">
                         #{res.queuePosition} in queue
                       </span>
                     </div>

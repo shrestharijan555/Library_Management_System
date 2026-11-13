@@ -135,7 +135,7 @@ export function ReportsDashboard({ stats }: ReportsDashboardProps) {
         {/* Date Range Selector */}
         <div className="flex flex-wrap items-center gap-1.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 mr-2">
-            <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+            <Calendar className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
             <span>Time Window:</span>
           </div>
           {DATE_RANGE_OPTIONS.map((opt) => {
@@ -145,9 +145,9 @@ export function ReportsDashboard({ stats }: ReportsDashboardProps) {
                 key={opt.value}
                 onClick={() => handleRangeChange(opt.value)}
                 disabled={isPending}
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                   isActive
-                    ? "bg-indigo-600 text-white shadow-xs font-semibold"
+                    ? "bg-zinc-900 text-white shadow-xs font-semibold dark:bg-zinc-100 dark:text-zinc-900"
                     : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 }`}
               >
@@ -211,7 +211,7 @@ export function ReportsDashboard({ stats }: ReportsDashboardProps) {
                   <span className="text-xs font-semibold uppercase tracking-wider">
                     Total Checkouts
                   </span>
-                  <TrendingUp className="w-4 h-4 text-indigo-600" />
+                  <TrendingUp className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
                 </div>
                 <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-2">
                   {stats.totalLoans.toLocaleString()}
@@ -243,9 +243,9 @@ export function ReportsDashboard({ stats }: ReportsDashboardProps) {
                   <span className="text-xs font-semibold uppercase tracking-wider">
                     Active Reservations
                   </span>
-                  <BookmarkCheck className="w-4 h-4 text-indigo-600" />
+                  <BookmarkCheck className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
                 </div>
-                <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-2">
+                <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-2">
                   {stats.pendingReservations}
                 </div>
                 <p className="text-xs text-zinc-500 mt-1">

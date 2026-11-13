@@ -8,7 +8,6 @@ import {
   CreditCard,
   Mail,
   ChevronDown,
-  CheckCircle2,
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import type { User } from "@/types";
@@ -59,11 +58,11 @@ export function UserMenu({ user }: UserMenuProps) {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "admin":
-        return "destructive" as const;
-      case "librarian":
         return "default" as const;
+      case "librarian":
+        return "secondary" as const;
       case "staff":
-        return "info" as const;
+        return "outline" as const;
       default:
         return "secondary" as const;
     }
@@ -78,43 +77,43 @@ export function UserMenu({ user }: UserMenuProps) {
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="User Account Menu"
-        className="flex items-center gap-2.5 rounded-lg border border-zinc-200 bg-white p-1.5 pr-3 transition-colors hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-1 cursor-pointer"
+        className="flex items-center gap-2.5 rounded-lg border border-zinc-200 bg-white p-1.5 pr-2.5 transition-all duration-150 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-950 cursor-pointer dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
       >
         {/* Avatar Circle */}
-        <div className="flex size-8 items-center justify-center rounded-md bg-zinc-900 text-xs font-semibold text-zinc-50 shadow-sm">
+        <div className="flex size-8 items-center justify-center rounded-md bg-zinc-900 text-xs font-semibold text-zinc-50 shadow-xs dark:bg-zinc-100 dark:text-zinc-900">
           {getInitials(user.fullName)}
         </div>
 
         <div className="hidden flex-col text-left sm:flex">
-          <span className="truncate text-xs font-semibold text-zinc-900 max-w-[130px]">
+          <span className="truncate text-xs font-semibold text-zinc-900 max-w-[130px] dark:text-zinc-100">
             {user.fullName}
           </span>
-          <span className="truncate text-[11px] text-zinc-400 capitalize">
+          <span className="truncate text-[11px] text-zinc-500 capitalize dark:text-zinc-400">
             {user.role}
           </span>
         </div>
 
-        <ChevronDown className="size-3.5 text-zinc-400" />
+        <ChevronDown className="size-3.5 text-zinc-400 transition-transform duration-150 dark:text-zinc-500" />
       </button>
 
       {/* Account Popover Menu */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-72 origin-top-right rounded-xl border border-zinc-200 bg-white p-3 shadow-lg ring-1 ring-black/5 z-50 animate-in fade-in-50 zoom-in-95 duration-100"
+          className="absolute right-0 mt-2 w-72 origin-top-right rounded-xl border border-zinc-200 bg-white p-3 shadow-lg ring-1 ring-black/5 z-50 animate-in fade-in-50 zoom-in-95 duration-100 dark:border-zinc-800 dark:bg-zinc-900 dark:ring-white/10"
           role="menu"
           aria-orientation="vertical"
         >
           {/* User Details Header */}
-          <div className="border-b border-zinc-100 pb-3">
+          <div className="border-b border-zinc-100 pb-3 dark:border-zinc-800">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-zinc-50 shadow-sm">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-zinc-900 text-sm font-bold text-zinc-50 shadow-xs dark:bg-zinc-100 dark:text-zinc-900">
                 {getInitials(user.fullName)}
               </div>
               <div className="flex-1 overflow-hidden">
-                <h4 className="truncate text-sm font-bold text-zinc-900">
+                <h4 className="truncate text-sm font-bold text-zinc-900 dark:text-zinc-100">
                   {user.fullName}
                 </h4>
-                <div className="mt-0.5 flex items-center gap-1.5">
+                <div className="mt-1 flex items-center gap-1.5">
                   <Badge
                     variant={getRoleBadgeVariant(user.role)}
                     className="px-2 py-0 text-[10px] font-semibold capitalize"
@@ -126,7 +125,6 @@ export function UserMenu({ user }: UserMenuProps) {
                     variant="success"
                     className="px-1.5 py-0 text-[10px] font-semibold capitalize"
                   >
-                    <CheckCircle2 className="mr-1 size-2.5 inline" />
                     {user.status}
                   </Badge>
                 </div>
@@ -135,18 +133,18 @@ export function UserMenu({ user }: UserMenuProps) {
           </div>
 
           {/* Quick Details Section */}
-          <div className="space-y-2 py-3 text-xs text-zinc-600 border-b border-zinc-100">
+          <div className="space-y-2 py-3 text-xs text-zinc-600 border-b border-zinc-100 dark:border-zinc-800 dark:text-zinc-400">
             <div className="flex items-center gap-2 truncate">
-              <Mail className="size-3.5 shrink-0 text-zinc-400" />
+              <Mail className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
               <span className="truncate">{user.email}</span>
             </div>
             <div className="flex items-center gap-2">
-              <CreditCard className="size-3.5 shrink-0 text-zinc-400" />
-              <span>Member ID: {user.memberCode}</span>
+              <CreditCard className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
+              <span className="font-mono">ID: {user.memberCode}</span>
             </div>
             {(user.department || user.gradeClass) && (
               <div className="flex items-center gap-2">
-                <UserIcon className="size-3.5 shrink-0 text-zinc-400" />
+                <UserIcon className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
                 <span>Dept: {user.department || user.gradeClass}</span>
               </div>
             )}
@@ -159,7 +157,7 @@ export function UserMenu({ user }: UserMenuProps) {
                 type="submit"
                 variant="outline"
                 size="sm"
-                className="w-full justify-center text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200"
+                className="w-full justify-center text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300 dark:border-zinc-800"
               >
                 <LogOut className="mr-2 size-3.5" />
                 Sign Out
